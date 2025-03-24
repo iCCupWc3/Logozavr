@@ -83,7 +83,7 @@
             background-color: #4a90e2;
             color: white;
             font-size: 16px;
-            cursor: pointer;
+            cursor: pointer; /* Убедитесь, что курсор указывает на кнопки */
             transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
             box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
         }
@@ -145,8 +145,8 @@
             vertical-align: middle;
         }
         .item-image {
-            width: 50px;
-            height: 50px;
+            width: 50px; /* Изменено на 50px */
+            height: 50px; /* Изменено на 50px */
             vertical-align: middle;
             margin-right: 10px;
         }
@@ -351,6 +351,17 @@
         .record-item button:hover {
             color: #357ab7;
         }
+
+        /* Добавляем жирный шрифт для результатов и статистики */
+        .results-column, .stats-table th, .stats-table td {
+            font-weight: bold;
+        }
+
+        /* Добавляем зеленый цвет для итоговых результатов */
+        .total-result {
+            font-weight: bold;
+            color: green;
+        }
     </style>
 </head>
 <body>
@@ -507,8 +518,46 @@
             displayMoneyResults(moneyResult, 'Результаты подсчета денег:');
         }
 
-        function countItems() {
-            const logInput = document.getElementById('logInput').value;
+function countItems() {
+    const logInput = document.getElementById('logInput').value;
+    const selectedItems = Array.from(document.querySelectorAll('.item-checkbox:checked')).map(checkbox => checkbox.value);
+    
+    if (selectedItems.length === 0) {
+        alert('Выберите хотя бы один предмет для поиска.');
+        return;
+    }
+    
+    // Создаем счетчик для хранения результатов
+    const itemCounts = {};
+    
+    // Разбиваем лог на строки
+    const logLines = logInput.split('\n');
+    
+    // Перебираем строки лога
+    logLines.forEach(line => {
+        selectedItems.forEach(item => {
+            const escapedItem = item.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+            const itemRegex = new RegExp(`${escapedItem}\\s+(\\d+)\\s+шт`, 'g');
+            let match;
+            while ((match = itemRegex.exec(line)) !== null) {
+                const quantity = parseInt(match[1]) || 1;
+                itemCounts[item] = (itemCounts[item] || 0) + quantity;
+            }
+        });
+    });
+
+    // Обчислення частоти
+    const totalCount = Object.values(itemCounts).reduce((sum, count) => sum + count, 0);
+    const frequencyStats = {};
+    for (const [item, count] of Object.entries(itemCounts)) {
+        frequencyStats[item] = {
+            count: count,
+            frequency: ((count / totalCount) * 100).toFixed(2) // Формат до двох знаків після коми
+        };
+    }
+
+    displayResults(frequencyStats, 'Результати підрахунку предметів:', true);
+
             const selectedItems = Array.from(document.querySelectorAll('.item-checkbox:checked')).map(checkbox => checkbox.value);
             
             if (selectedItems.length === 0) {
@@ -699,8 +748,7 @@
 
         function displayResults(results, title, includeImages = false) {
             const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = `<h2>${title}</h2>`;
-            
+            resultsDiv.innerHTML = `<h2 style="font-weight: bold;">${title}</h2>`; // Заголовок жирным
             const container = document.createElement('div');
             container.style.display = 'flex';
             container.style.flexWrap = 'wrap';
@@ -716,7 +764,10 @@
                 itemDiv.style.flex = '1 0 30%'; // Занимает 30% ширины, чтобы вмещать 3 предмета в строке
                 itemDiv.style.boxSizing = 'border-box';
                 itemDiv.style.padding = '10px'; // Отступы для визуального разделения
-                itemDiv.innerHTML = `${includeImages ? `<img src="images/${key}.gif" class="item-image" alt="${key}">` : ''} ${key}: ${value}`;
+                
+                // Условие для изменения размера изображения
+                const imageSize = title === 'Результаты нападений:' ? '150px' : '50px';
+                itemDiv.innerHTML = `${includeImages ? `<img src="images/${key}.gif" class="item-image" style="width: ${imageSize}; height: ${imageSize};" alt="${key}">` : ''} ${key}: ${value}`;
                 
                 row.appendChild(itemDiv);
                 count++;
@@ -740,7 +791,7 @@
 
         function displayMoneyResults(results, title) {
             const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = `<h2>${title}</h2>`;
+            resultsDiv.innerHTML = `<h2 style="font-weight: bold;">${title}</h2>`; // Заголовок жирным
             const div = document.createElement('div');
             div.className = 'results-column';
             div.innerHTML = results;
@@ -754,7 +805,7 @@
         // Обновленная функция displayResults для учета рекордов и истории
         function displayResults(results, title, includeImages = false) {
             const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = `<h2>${title}</h2>`;
+            resultsDiv.innerHTML = `<h2 style="font-weight: bold;">${title}</h2>`; // Заголовок жирным
             const container = document.createElement('div');
             container.style.display = 'flex';
             container.style.flexWrap = 'wrap';
@@ -770,7 +821,8 @@
                 itemDiv.style.flex = '1 0 30%'; // Занимает 30% ширины, чтобы вмещать 3 предмета в строке
                 itemDiv.style.boxSizing = 'border-box';
                 itemDiv.style.padding = '10px'; // Отступы для визуального разделения
-                itemDiv.innerHTML = `${includeImages ? `<img src="images/${key}.gif" class="item-image" alt="${key}">` : ''} ${key}: ${value}`;
+                const imageSize = title === 'Результаты нападений:' ? '150px' : '50px'; // Условие для размера изображения
+                itemDiv.innerHTML = `${includeImages ? `<img src="images/${key}.gif" class="item-image" style="width: ${imageSize}; height: ${imageSize};" alt="${key}">` : ''} ${key}: ${value}`;
                 
                 row.appendChild(itemDiv);
                 count++;
@@ -784,7 +836,7 @@
                 }
             }
 
-            // Добавляем оставшиеся элементы, если они есть
+                        // Добавляем оставшиеся элементы, если они есть
             if (count % 3 !== 0) {
                 container.appendChild(row);
             }
@@ -820,7 +872,7 @@
             // Сохранение рекордов и обновление отображения
             if (updated) {
                 localStorage.setItem('attack-records', JSON.stringify(records));
-                                displayAttackRecords();
+                displayAttackRecords();
             }
         }
         
@@ -871,6 +923,8 @@
                 img.src = `images/${monster}.gif`;
                 img.alt = monster;
                 img.className = 'item-image';
+                img.style.width = '150px'; // Установка ширины изображения
+                img.style.height = '150px'; // Установка высоты изображения
                 img.onerror = () => { img.style.display = 'none'; };
                 recordItem.appendChild(img);
                 
@@ -926,9 +980,9 @@
             info.className = 'record-info';
             
             const moneyAmount = document.createElement('div');
-            moneyAmount.innerHTML = `Рекорд: ${record.gold || 0} <img src="images/1.svg" class="coin" alt="золото">, 
+            moneyAmount.innerHTML = `Рекорд: <span class="total-result">${record.gold || 0} <img src="images/1.svg" class="coin" alt="золото">, 
                                      ${record.silver || 0} <img src="images/2.svg" class="coin" alt="серебро">, 
-                                     ${record.copper || 0} <img src="images/3.svg" class="coin" alt="медь">`;
+                                     ${record.copper || 0} <img src="images/3.svg" class="coin" alt="медь"></span>`;
             info.appendChild(moneyAmount);
             
             if (record.date) {
@@ -1277,7 +1331,7 @@
             
             // Добавляем общее количество
             const totalCount = sortedMonsters.reduce((sum, [_, count]) => sum + count, 0);
-            html += `<p style="text-align: center;"><strong>Всего монстров убито:</strong> ${totalCount}</p>`;
+            html += `<p style="text-align: center; color: green; font-weight: bold;"><strong>Всего монстров убито:</strong> ${totalCount}</p>`;
             
             statsContainer.innerHTML = html;
         }
@@ -1319,7 +1373,7 @@
             const silver = Math.floor(remainder / 100);
             const copper = remainder % 100;
             
-            let html = `<p style="text-align: center;"><strong>Всего заработано:</strong></p>`;
+            let html = `<p style="text-align: center; color: green; font-weight: bold;"><strong>Всего заработано:</strong></p>`;
             html += `<div class="money-stats" style="text-align: center;">
                 ${gold} <img src="images/1.svg" class="coin" alt="золото">, 
                 ${silver} <img src="images/2.svg" class="coin" alt="серебро">, 
@@ -1390,7 +1444,7 @@
             
             // Добавляем общее количество
             const totalCount = Object.values(frequencyStats).reduce((sum, data) => sum + data.count, 0);
-            html += `<p style="text-align: center;"><strong>Всего предметов собрано:</strong> ${totalCount}</p>`;
+            html += `<p style="text-align: center; color: green; font-weight: bold;"><strong>Всего предметов собрано:</strong> ${totalCount}</p>`;
             
             statsContainer.innerHTML = html;
         }

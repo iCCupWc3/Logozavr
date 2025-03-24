@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Логозавр:)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Cinzel:wght@700&family=Montserrat:wght@400,700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0; /* Убираем отступы */
+            background: linear-gradient(135deg, #f4f4f9, #e0e7ff);
+            color: #333;
+        }
+        .header {
+            width: 100%;
+            height: 300px; /* Увеличенная высота для изображения */
+            overflow: hidden; /* Скрываем лишнее */
+            position: relative; /* Для абсолютного позиционирования изображения */
+        }
+        .header img {
+            width: 100%; /* Занимает всю ширину */
+            height: 100%; /* Занимает всю высоту контейнера */
+            object-fit: cover; /* Масштабирует изображение, сохраняя пропорции */
+            position: absolute; /* Позволяет изображению оставаться в пределах шапки */
+            top: 0; /* Устанавливаем верхнюю границу */
+            left: 0; /* Устанавливаем левую границу */
+        }
+        h1 {
+            text-align: center;
+            color: #4a90e2;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.5em;
+            margin-top: 20px; /* Отступ сверху для заголовка */
+        }
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            margin: 0 5px;
+            border: 2px solid #4a90e2;
+            border-radius: 5px;
+            background-color: #fff;
+            color: #4a90e2;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s, transform 0.3s;
+        }
+        .tab.active {
+            background-color: #4a90e2;
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            border: 2px solid #4a90e2;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
+        }
+        textarea:focus {
+            border-color: #357ab7;
+            box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4a90e2;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
+        }
+        button:hover {
+            background-color: #357ab7;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+        button:active {
+            transform: scale(0.95);
+            box-shadow: 0px 2px 5px rgba(0,0,0,0.2) inset;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border: 2px solid #4a90e2;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            animation: fadeIn 1s ease-in-out;
+            font-family: 'Cinzel', serif;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            padding: 5px 0;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+        }
+        .results-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .results-column div {
+            padding: 10px;
+            border: 2px solid #4a90e2;
+            border-radius: 5px;
+            background-color: #fff;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            animation: slideIn 0.5s ease-in-out;
+        }
+        .monster-image {
+            width: 50px;
+            height: 50px;
+            margin-right: 10px;
+            border-radius: 5px;
+            box-shadow: 0px 2px 5px rgba(0,0,0,0.2);
+        }
+        .coin {
+            width: 20px;
+            height: 20px;
+            vertical-align: middle;
+        }
+        .item-image {
+            width: 50px;
+            height: 50px;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .checkbox-group input {
+            margin: 0;
+        }
+        .add-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .add-item input {
+            padding: 10px;
+            border: 2px solid #4a90e2;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .spoiler {
+            margin: 10px 0;
+        }
+        .spoiler-content {
+            display: none;
+            padding: 10px;
+            border: 2px solid #4a90e2;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+        .spoiler-button {
+            background-color: #4a90e2;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
+        }
+        .spoiler-button:hover {
+            background-color: #357ab7;
+            transform: scale(1.05);
+        }
+        .spoiler-button:active {
+            transform: scale(0.95);
+            box-shadow: 0px 2px 5px rgba(0,0,0,0.2) inset;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        /* Стили для вкладки "Рекорды" и "Статистика" */
+        .records-container, .stats-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .records-section, .stats-section {
+            flex: 1;
+            min-width: 300px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            padding: 15px;
+            box-shadow: 0px 2px 5px rgba(0,0,0,0.1);
+            text-align: center; /* Центрирование текста */
+        }
+        .record-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0px 1px 3px rgba(0,0,0,0.1);
+        }
+        .record-info {
+            flex-grow: 1;
+        }
+        .record-date {
+            color: #777;
+            font-size: 0.8em;
+        }
+        
+        /* Стили для вкладки "История" */
+        .history-day {
+            margin-bottom: 15px;
+        }
+        .history-date {
+            font-weight: bold;
+            cursor: pointer;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .history-date:hover {
+            background-color: #e9e9e9;
+        }
+        .history-entries {
+            display: none;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 0 0 5px 5px;
+            margin-top: -5px;
+            background-color: white;
+        }
+        .history-entry {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .history-time {
+            font-size: 0.9em;
+            color: #666;
+        }
+        .history-type {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        /* Стили для таблиц статистики */
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-table th, .stats-table td {
+            padding: 12px;
+            text-align: left; /* Выравнивание по левому краю */
+            border: 1px solid #ddd;
+        }
+
+        .stats-table th {
+            background-color: #4a90e2;
+            color: white;
+            font-weight: bold;
+        }
+
+        .stats-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .stats-table tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .scale {
+            width: 100%;
+            background-color: #f2f2f2;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .scale div {
+            height: 10px;
+            background-color: #4a90e2;
+            border-radius: 5px;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5em;
+            }
+            button {
+                width: 100%;
+            }
+            .records-container {
+                flex-direction: column;
+            }
+        }
+        
+        .record-item button {
+            margin-left: 5px;
+            padding: 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: transparent;
+            color: #4a90e2;
+            cursor: pointer;
+            font-size: 18px; /* Размер шрифта для иконок */
+            transition: color 0.3s;
+        }
+
+        .record-item button:hover {
+            color: #357ab7;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="images/дракон.gif" alt="Дракон">
+    </div>
+    <h1>Логозавр:)</h1>
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('log')">Лог</div>
+        <div class="tab" onclick="showTab('attacks')">Нападения</div>
+        <div class="tab" onclick="showTab('money')">Деньги</div>
+        <div class="tab" onclick="showTab('items')">Предметы</div>
+        <div class="tab" onclick="showTab('records')">Рекорды</div>
+        <div class="tab" onclick="showTab('history')">История</div>
+        <div class="tab" onclick="showTab('stats')">Статистика</div>
+    </div>
+    <div id="log" class="tab-content active">
+        <textarea id="logInput" placeholder="Введите лог здесь..."></textarea>
+    </div>
+    <div id="attacks" class="tab-content">
+        <button onclick="countAttacks()">Посчитать нападения</button>
+    </div>
+    <div id="money" class="tab-content">
+        <button onclick="countMoney()">Посчитать деньги</button>
+    </div>
+    <div id="items" class="tab-content">
+        <button class="spoiler-button" onclick="toggleSpoiler('itemFilter')">Показать/Скрыть фильтр предметов</button>
+        <div id="itemFilter" class="spoiler-content">
+            <div class="checkbox-group" id="itemCheckboxGroup">
+                <!-- Существующие предметы будут добавлены здесь -->
+            </div>
+            <div class="add-item">
+                <input type="text" id="newItemInput" placeholder="Введите название предмета">
+                <button onclick="addItem()">Добавить предмет</button>
+                <button onclick="clearStorage()">Очистить хранилище</button>
+                <input type="file" id="fileInput" accept=".txt" onchange="importItems(event)">
+            </div>
+            <button onclick="toggleSelectAll()">Выбрать все/Снять все</button>
+            <button onclick="removeSelectedItems()">Удалить выбранные</button> <!-- Новая кнопка -->
+        </div>
+        <button onclick="countItems()">Посчитать предметы</button>
+    </div>
+    <div id="records" class="tab-content">
+        <h2>Рекорды</h2>
+        <div class="records-container">
+            <div class="records-section">
+                <h3>Рекорды нападений</h3>
+                <div id="attack-records"></div>
+                <button onclick="clearRecords('attack-records')">Сбросить рекорды нападений</button>
+            </div>
+            <div class="records-section">
+                <h3>Рекорды денег</h3>
+                <div id="money-records"></div>
+                <button onclick="clearRecords('money-record')">Сбросить рекорды денег</button>
+            </div>
+        </div>
+    </div>
+    <div id="history" class="tab-content">
+        <h2>История измерений</h2>
+        <div id="history-container">
+            <!-- История будет добавлена здесь -->
+        </div>
+        <button onclick="clearHistory()">Очистить историю</button>
+    </div>
+    <div id="stats" class="tab-content">
+        <h2>Общая статистика</h2>
+        <div class="stats-container">
+            <div class="stats-section">
+                <h3>Монстры</h3>
+                <div id="total-monsters-stats">
+                    <p>Загрузка статистики...</p>
+                </div>
+            </div>
+            <div class="stats-section">
+                <h3>Деньги</h3>
+                <div id="total-money-stats">
+                    <p>Загрузка статистики...</p>
+                </div>
+            </div>
+            <div class="stats-section">
+                <h3>Предметы</h3>
+                <div id="total-items-stats">
+                    <p>Загрузка статистики...</p>
+                </div>
+            </div>
+        </div>
+        <button onclick="clearAllStats()">Сбросить всю статистику</button>
+    </div>
+    <div id="results"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+            loadRecords();
+            loadHistory();
+            loadStats();
+            
+            // Добавление обработчика двойного клика на историю для удаления записей
+            document.getElementById('history-container').addEventListener('dblclick', handleHistoryEntryDblClick);
+        });
+
+        function showTab(tabId) {
+            const tabs = document.querySelectorAll('.tab');
+            const contents = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.classList.remove('active'));
+            document.querySelector(`.tab[onclick="showTab('${tabId}')"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function toggleSpoiler(spoilerId) {
+            const spoilerContent = document.getElementById(spoilerId);
+            spoilerContent.style.display = spoilerContent.style.display === 'none' || spoilerContent.style.display === '' ? 'block' : 'none';
+        }
+
+        function countAttacks() {
+            const logInput = document.getElementById('logInput').value;
+            const attackCounts = parseLog(logInput, /Вы совершили нападение на (.+?)\s*\[/g);
+            displayResults(attackCounts, 'Результаты нападений:', true);
+        }
+
+        function countMoney() {
+            const logInput = document.getElementById('logInput').value;
+            const logLines = logInput.split('\n');
+            
+            // Регулярное выражение для обычных денег (с тремя числами - золото, серебро, медь)
+            const goldSilverCopperPattern = /Вы получили:\s*(\d+)\s+(\d+)\s+(\d+)/;
+            
+            // Регулярное выражение для обычных денег (с двумя числами - серебро, медь)
+            const silverCopperPattern = /Вы получили:\s*(\d+)\s+(\d+)(?!\s+\d)/;
+            
+            // Регулярное выражение для магических денег (с тремя числами - золото, серебро, медь)
+            const magicGoldSilverCopperPattern = /Благодаря магическим эффектам, вы сумели обогатиться еще на\s*(\d+)\s+(\d+)\s+(\d+)/;
+            
+            // Регулярное выражение для магических денег (с двумя числами - серебро, медь)
+            const magicSilverCopperPattern = /Благодаря магическим эффектам, вы сумели обогатиться еще на\s*(\d+)\s+(\d+)(?!\s+\d)/;
+            
+            // Подсчет обычных денег
+            const totalCopperGSC = calculateTotalCopper(logLines, goldSilverCopperPattern, true);
+            const totalCopperSC = calculateTotalCopper(logLines, silverCopperPattern, false);
+            const totalCopper = totalCopperGSC + totalCopperSC;
+            
+            // Подсчет магических денег
+            const magicTotalCopperGSC = calculateTotalCopper(logLines, magicGoldSilverCopperPattern, true);
+            const magicTotalCopperSC = calculateTotalCopper(logLines, magicSilverCopperPattern, false);
+            const magicTotalCopper = magicTotalCopperGSC + magicTotalCopperSC;
+            
+            const combinedTotalCopper = totalCopper + magicTotalCopper;
+
+            const moneyResult = formatMoneyResult(totalCopper, 'Выбито с боев') +
+                               formatMoneyResult(magicTotalCopper, 'Благодаря магическим эффектам') +
+                               formatMoneyResult(combinedTotalCopper, 'Итого');
+
+            displayMoneyResults(moneyResult, 'Результаты подсчета денег:');
+        }
+
+        function countItems() {
+            const logInput = document.getElementById('logInput').value;
+            const selectedItems = Array.from(document.querySelectorAll('.item-checkbox:checked')).map(checkbox => checkbox.value);
+            
+            if (selectedItems.length === 0) {
+                alert('Выберите хотя бы один предмет для поиска.');
+                return;
+            }
+            
+            // Создаем счетчик для хранения результатов
+            const itemCounts = {};
+            
+            // Разбиваем лог на строки
+            const logLines = logInput.split('\n');
+            
+            // Перебираем строки лога
+            logLines.forEach(line => {
+                // Для каждого выбранного предмета проверяем, есть ли он в строке
+                selectedItems.forEach(item => {
+                    // Экранируем специальные символы в названии предмета
+                    const escapedItem = item.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                    
+                    // Создаем регулярное выражение для конкретного предмета
+                    const itemRegex = new RegExp(`${escapedItem}\\s+(\\d+)\\s+шт`, 'g');
+                    
+                    // Поиск предмета в строке
+                    let match;
+                    while ((match = itemRegex.exec(line)) !== null) {
+                        // Извлекаем количество
+                        const quantity = parseInt(match[1]) || 1;
+                        
+                        // Добавляем к общему счету
+                        itemCounts[item] = (itemCounts[item] || 0) + quantity;
+                    }
+                });
+            });
+            
+            displayResults(itemCounts, 'Результаты подсчета предметов:', true);
+        }
+
+        function toggleSelectAll() {
+            const checkboxes = document.querySelectorAll('.item-checkbox');
+            const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
+            checkboxes.forEach(checkbox => checkbox.checked = !allChecked);
+        }
+
+        function clearStorage() {
+            localStorage.removeItem('itemSettings');
+            document.getElementById('itemCheckboxGroup').innerHTML = '';
+            alert('Локальное хранилище очищено.');
+        }
+
+        function addItem() {
+            const newItemInput = document.getElementById('newItemInput');
+            const newItem = newItemInput.value.trim();
+            if (newItem && !isItemExists(newItem.toLowerCase())) {
+                const checkboxGroup = document.getElementById('itemCheckboxGroup');
+                const label = document.createElement('label');
+                label.innerHTML = `<input type="checkbox" class="item-checkbox" value="${newItem}"> ${newItem}`;
+                checkboxGroup.appendChild(label);
+                newItemInput.value = '';
+                saveSettings();
+            } else {
+                alert('Этот предмет уже существует или поле пустое.');
+            }
+        }
+
+        function removeSelectedItems() {
+            const checkboxes = document.querySelectorAll('.item-checkbox:checked');
+            checkboxes.forEach(checkbox => {
+                const label = checkbox.parentElement;
+                label.remove();
+            });
+            saveSettings();
+        }
+
+        function isItemExists(item) {
+            const checkboxes = document.querySelectorAll('.item-checkbox');
+            return Array.from(checkboxes).some(checkbox => checkbox.value.toLowerCase() === item);
+        }
+
+        function importItems(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                const lines = content.split('\n');
+                const checkboxGroup = document.getElementById('itemCheckboxGroup');
+                
+                lines.forEach(line => {
+                    const item = line.trim();
+                    if (item && !isItemExists(item.toLowerCase())) {
+                        const label = document.createElement('label');
+                        label.innerHTML = `<input type="checkbox" class="item-checkbox" value="${item}"> ${item}`;
+                        checkboxGroup.appendChild(label);
+                    }
+                });
+                
+                saveSettings();
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        }
+
+        function saveSettings() {
+            const checkboxes = document.querySelectorAll('.item-checkbox');
+            const items = Array.from(checkboxes).map(checkbox => checkbox.value);
+            localStorage.setItem('itemSettings', JSON.stringify(items));
+        }
+
+        function loadSettings() {
+            try {
+                const savedItems = JSON.parse(localStorage.getItem('itemSettings')) || [];
+                const checkboxGroup = document.getElementById('itemCheckboxGroup');
+                
+                savedItems.forEach(item => {
+                    const label = document.createElement('label');
+                    label.innerHTML = `<input type="checkbox" class="item-checkbox" value="${item}"> ${item}`;
+                    checkboxGroup.appendChild(label);
+                });
+            } catch (error) {
+                console.error('Error loading settings:', error);
+                localStorage.removeItem('itemSettings');
+            }
+        }
+
+        function parseLog(log, pattern) {
+            const counts = {};
+            let match;
+            
+            if (pattern.global) {
+                // For global regex patterns
+                while ((match = pattern.exec(log)) !== null) {
+                    const name = match[1].trim();
+                    const quantity = match[2] ? parseInt(match[2]) : 1;
+                    counts[name] = (counts[name] || 0) + quantity;
+                }
+            } else {
+                // For non-global regex patterns
+                const lines = log.split('\n');
+                for (const line of lines) {
+                    match = line.match(pattern);
+                    if (match) {
+                        const name = match[1].trim();
+                        const quantity = match[2] ? parseInt(match[2]) : 1;
+                        counts[name] = (counts[name] || 0) + quantity;
+                    }
+                }
+            }
+            
+            return counts;
+        }
+
+        function calculateTotalCopper(logLines, pattern, hasGold = false) {
+            let totalCopper = 0;
+            
+            for (const line of logLines) {
+                const match = line.match(pattern);
+                if (match) {
+                    if (hasGold) {
+                        // Если это формат с золотом, серебром и медью
+                        const gold = parseInt(match[1]) || 0;
+                        const silver = parseInt(match[2]) || 0;
+                        const copper = parseInt(match[3]) || 0;
+                        
+                        totalCopper += gold * 10000 + silver * 100 + copper;
+                    } else {
+                        // Если это формат только с серебром и медью
+                        const silver = parseInt(match[1]) || 0;
+                        const copper = parseInt(match[2]) || 0;
+                        
+                        totalCopper += silver * 100 + copper;
+                    }
+                }
+            }
+            
+            return totalCopper;
+        }
+
+        function formatMoneyResult(totalCopper, label) {
+            const gold = Math.floor(totalCopper / 10000);
+            const remainder = totalCopper % 10000;
+            const silver = Math.floor(remainder / 100);
+            const copper = remainder % 100;
+
+            return `<div>${label}: ${gold} <img src="images/1.svg" class="coin" alt="золото">, ${silver} <img src="images/2.svg" class="coin" alt="серебро">, ${copper} <img src="images/3.svg" class="coin" alt="медь"></div>`;
+        }
+
+        function displayResults(results, title, includeImages = false) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<h2>${title}</h2>`;
+            
+            const container = document.createElement('div');
+            container.style.display = 'flex';
+            container.style.flexWrap = 'wrap';
+            
+            let row = document.createElement('div');
+            row.style.display = 'flex';
+            row.style.width = '100%';
+
+            let count = 0;
+
+            for (const [key, value] of Object.entries(results)) {
+                const itemDiv = document.createElement('div');
+                itemDiv.style.flex = '1 0 30%'; // Занимает 30% ширины, чтобы вмещать 3 предмета в строке
+                itemDiv.style.boxSizing = 'border-box';
+                itemDiv.style.padding = '10px'; // Отступы для визуального разделения
+                itemDiv.innerHTML = `${includeImages ? `<img src="images/${key}.gif" class="item-image" alt="${key}">` : ''} ${key}: ${value}`;
+                
+                row.appendChild(itemDiv);
+                count++;
+
+                // Если добавлено 3 предмета, добавляем строку в контейнер и создаем новую
+                if (count % 3 === 0) {
+                    container.appendChild(row);
+                    row = document.createElement('div');
+                    row.style.display = 'flex';
+                    row.style.width = '100%';
+                }
+            }
+
+            // Добавляем оставшиеся элементы, если они есть
+            if (count % 3 !== 0) {
+                container.appendChild(row);
+            }
+
+            resultsDiv.appendChild(container);
+        }
+
+        function displayMoneyResults(results, title) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<h2>${title}</h2>`;
+            const div = document.createElement('div');
+            div.className = 'results-column';
+            div.innerHTML = results;
+            resultsDiv.appendChild(div);
+            
+            // Обновление рекордов денег и истории
+            updateMoneyRecords(results);
+            addHistoryEntry('money', results);
+        }
+        
+        // Обновленная функция displayResults для учета рекордов и истории
+        function displayResults(results, title, includeImages = false) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `<h2>${title}</h2>`;
+            const container = document.createElement('div');
+            container.style.display = 'flex';
+            container.style.flexWrap = 'wrap';
+            
+            let row = document.createElement('div');
+            row.style.display = 'flex';
+            row.style.width = '100%';
+
+            let count = 0;
+
+            for (const [key, value] of Object.entries(results)) {
+                const itemDiv = document.createElement('div');
+                itemDiv.style.flex = '1 0 30%'; // Занимает 30% ширины, чтобы вмещать 3 предмета в строке
+                itemDiv.style.boxSizing = 'border-box';
+                itemDiv.style.padding = '10px'; // Отступы для визуального разделения
+                itemDiv.innerHTML = `${includeImages ? `<img src="images/${key}.gif" class="item-image" alt="${key}">` : ''} ${key}: ${value}`;
+                
+                row.appendChild(itemDiv);
+                count++;
+
+                // Если добавлено 3 предмета, добавляем строку в контейнер и создаем новую
+                if (count % 3 === 0) {
+                    container.appendChild(row);
+                    row = document.createElement('div');
+                    row.style.display = 'flex';
+                    row.style.width = '100%';
+                }
+            }
+
+            // Добавляем оставшиеся элементы, если они есть
+            if (count % 3 !== 0) {
+                container.appendChild(row);
+            }
+
+            resultsDiv.appendChild(container);
+            
+            // Если это результаты нападений, обновляем рекорды
+            if (title === 'Результаты нападений:') {
+                updateAttackRecords(results);
+                addHistoryEntry('attacks', results);
+            } else if (title === 'Результаты подсчета предметов:') {
+                addHistoryEntry('items', results);
+            }
+        }
+        
+        // Функция для обновления рекордов нападений
+        function updateAttackRecords(results) {
+            // Загрузка текущих рекордов
+            const records = JSON.parse(localStorage.getItem('attack-records') || '{}');
+            let updated = false;
+            
+            // Проверка и обновление рекордов
+            for (const [monster, count] of Object.entries(results)) {
+                if (!records[monster] || records[monster].count < count) {
+                    records[monster] = {
+                        count: count,
+                        date: new Date().toISOString()
+                    };
+                    updated = true;
+                }
+            }
+            
+            // Сохранение рекордов и обновление отображения
+            if (updated) {
+                localStorage.setItem('attack-records', JSON.stringify(records));
+                                displayAttackRecords();
+            }
+        }
+        
+        // Функция для обновления рекордов денег
+        function updateMoneyRecords(resultHTML) {
+            // Извлечение итогового значения меди из HTML
+            const totalMatch = resultHTML.match(/Итого: (\d+) .+?, (\d+) .+?, (\d+)/);
+            const gold = parseInt(totalMatch[1]);
+            const silver = parseInt(totalMatch[2]);
+            const copper = parseInt(totalMatch[3]);
+            const totalCopper = gold * 10000 + silver * 100 + copper;
+            
+            // Загрузка текущего рекорда
+            const record = JSON.parse(localStorage.getItem('money-record') || '{"totalCopper": 0}');
+            
+            // Проверка и обновление рекорда
+            if (totalCopper > record.totalCopper) {
+                record.totalCopper = totalCopper;
+                record.gold = gold;
+                record.silver = silver;
+                record.copper = copper;
+                record.date = new Date().toISOString();
+                
+                localStorage.setItem('money-record', JSON.stringify(record));
+                displayMoneyRecords();
+            }
+        }
+        
+        // Функция для отображения рекордов нападений
+        function displayAttackRecords() {
+            const recordsContainer = document.getElementById('attack-records');
+            recordsContainer.innerHTML = '';
+            
+            const records = JSON.parse(localStorage.getItem('attack-records') || '{}');
+            const sortedRecords = Object.entries(records).sort((a, b) => b[1].count - a[1].count);
+            
+            if (sortedRecords.length === 0) {
+                recordsContainer.innerHTML = '<p>Нет рекордов</p>';
+                return;
+            }
+            
+            for (const [monster, data] of sortedRecords) {
+                const recordItem = document.createElement('div');
+                recordItem.className = 'record-item';
+                
+                // Добавление изображения (если есть)
+                const img = document.createElement('img');
+                img.src = `images/${monster}.gif`;
+                img.alt = monster;
+                img.className = 'item-image';
+                img.onerror = () => { img.style.display = 'none'; };
+                recordItem.appendChild(img);
+                
+                // Информация о рекорде
+                const info = document.createElement('div');
+                info.className = 'record-info';
+                
+                const monsterName = document.createElement('div');
+                monsterName.textContent = `${monster}: ${data.count}`;
+                info.appendChild(monsterName);
+                
+                const date = document.createElement('div');
+                date.className = 'record-date';
+                date.textContent = new Date(data.date).toLocaleDateString();
+                info.appendChild(date);
+                
+                recordItem.appendChild(info);
+                
+                // Кнопки редактирования и удаления
+                const editButton = document.createElement('button');
+                editButton.innerHTML = '&#9998;'; // Иконка ручки
+                editButton.title = 'Редактировать';
+                editButton.onclick = () => editRecord('attack-records', monster);
+                recordItem.appendChild(editButton);
+                
+                const deleteButton = document.createElement('button');
+                deleteButton.innerHTML = '&#10006;'; // Иконка крестика
+                deleteButton.title = 'Удалить';
+                deleteButton.onclick = () => deleteRecord('attack-records', monster);
+                recordItem.appendChild(deleteButton);
+                
+                recordsContainer.appendChild(recordItem);
+            }
+        }
+        
+        // Функция для отображения рекордов денег
+        function displayMoneyRecords() {
+            const recordsContainer = document.getElementById('money-records');
+            recordsContainer.innerHTML = '';
+            
+            const record = JSON.parse(localStorage.getItem('money-record') || '{"totalCopper": 0}');
+            
+            if (record.totalCopper === 0) {
+                recordsContainer.innerHTML = '<p>Нет рекордов</p>';
+                return;
+            }
+            
+            const recordItem = document.createElement('div');
+            recordItem.className = 'record-item';
+            
+            // Информация о рекорде
+            const info = document.createElement('div');
+            info.className = 'record-info';
+            
+            const moneyAmount = document.createElement('div');
+            moneyAmount.innerHTML = `Рекорд: ${record.gold || 0} <img src="images/1.svg" class="coin" alt="золото">, 
+                                     ${record.silver || 0} <img src="images/2.svg" class="coin" alt="серебро">, 
+                                     ${record.copper || 0} <img src="images/3.svg" class="coin" alt="медь">`;
+            info.appendChild(moneyAmount);
+            
+            if (record.date) {
+                const date = document.createElement('div');
+                date.className = 'record-date';
+                date.textContent = new Date(record.date).toLocaleDateString();
+                info.appendChild(date);
+            }
+            
+            recordItem.appendChild(info);
+            
+            // Кнопки редактирования и удаления
+            const editButton = document.createElement('button');
+            editButton.innerHTML = '&#9998;'; // Иконка ручки
+            editButton.title = 'Редактировать';
+            editButton.onclick = () => editMoneyRecord();
+            recordItem.appendChild(editButton);
+            
+            const deleteButton = document.createElement('button');
+            deleteButton.innerHTML = '&#10006;'; // Иконка крестика
+            deleteButton.title = 'Удалить';
+            deleteButton.onclick = () => deleteMoneyRecord();
+            recordItem.appendChild(deleteButton);
+            
+            recordsContainer.appendChild(recordItem);
+        }
+        
+        // Функция для удаления рекорда нападений
+        function deleteRecord(recordType, monster) {
+            if (confirm(`Вы уверены, что хотите удалить рекорд для ${monster}?`)) {
+                const records = JSON.parse(localStorage.getItem(recordType) || '{}');
+                delete records[monster];
+                localStorage.setItem(recordType, JSON.stringify(records));
+                displayAttackRecords(); // Обновляем отображение
+            }
+        }
+
+        // Функция для удаления рекорда денег
+        function deleteMoneyRecord() {
+            if (confirm('Вы уверены, что хотите удалить рекорд денег?')) {
+                localStorage.removeItem('money-record');
+                displayMoneyRecords(); // Обновляем отображение
+            }
+        }
+
+        // Функция для редактирования рекорда нападений
+        function editRecord(recordType, monster) {
+            const records = JSON.parse(localStorage.getItem(recordType) || '{}');
+            const newCount = prompt(`Введите новое количество для ${monster}:`, records[monster].count);
+            
+            if (newCount !== null) {
+                records[monster].count = parseInt(newCount);
+                records[monster].date = new Date().toISOString(); // Обновляем дату
+                localStorage.setItem(recordType, JSON.stringify(records));
+                displayAttackRecords(); // Обновляем отображение
+            }
+        }
+
+        // Функция для редактирования рекорда денег
+        function editMoneyRecord() {
+            const record = JSON.parse(localStorage.getItem('money-record') || '{"totalCopper": 0}');
+            const newGold = prompt(`Введите новое количество золота:`, record.gold);
+            const newSilver = prompt(`Введите новое количество серебра:`, record.silver);
+            const newCopper = prompt(`Введите новое количество меди:`, record.copper);
+            
+            if (newGold !== null && newSilver !== null && newCopper !== null) {
+                record.gold = parseInt(newGold);
+                record.silver = parseInt(newSilver);
+                record.copper = parseInt(newCopper);
+                record.date = new Date().toISOString(); // Обновляем дату
+                localStorage.setItem('money-record', JSON.stringify(record));
+                displayMoneyRecords(); // Обновляем отображение
+            }
+        }
+
+        // Функция для загрузки рекордов при загрузке страницы
+        function loadRecords() {
+            displayAttackRecords();
+            displayMoneyRecords();
+        }
+        
+        // Функция для очистки рекордов
+        function clearRecords(recordType) {
+            if (recordType === 'attack-records') {
+                localStorage.removeItem('attack-records');
+                displayAttackRecords();
+            } else if (recordType === 'money-record') {
+                localStorage.removeItem('money-record');
+                displayMoneyRecords();
+            }
+        }
+        
+        // Функция для добавления записи в историю
+        function addHistoryEntry(type, data) {
+            // Загрузка текущей истории
+            let history = JSON.parse(localStorage.getItem('log-history') || '[]');
+            
+            // Создание новой записи
+            const entry = {
+                type: type,
+                data: data,
+                date: new Date().toISOString()
+            };
+            
+            // Добавление записи в историю
+            history.unshift(entry);
+            
+            // Ограничение истории (например, до 100 записей)
+            if (history.length > 100) {
+                history = history.slice(0, 100);
+            }
+            
+            // Сохранение истории
+            localStorage.setItem('log-history', JSON.stringify(history));
+            
+            // Обновляем отображение истории и статистики
+            displayHistory();
+            loadStats();
+        }
+        
+        // Функция для отображения истории
+        function displayHistory() {
+            const historyContainer = document.getElementById('history-container');
+            historyContainer.innerHTML = '';
+            
+            const history = JSON.parse(localStorage.getItem('log-history') || '[]');
+            
+            if (history.length === 0) {
+                historyContainer.innerHTML = '<p>История пуста</p>';
+                return;
+            }
+            
+            // Группировка истории по датам (без учета времени)
+            const groupedByDate = {};
+            history.forEach(entry => {
+                const date = new Date(entry.date).toLocaleDateString();
+                if (!groupedByDate[date]) {
+                    groupedByDate[date] = [];
+                }
+                groupedByDate[date].push(entry);
+            });
+            
+            // Отображение истории по дням в виде спойлеров
+            for (const [date, entries] of Object.entries(groupedByDate)) {
+                const historyDay = document.createElement('div');
+                historyDay.className = 'history-day';
+                
+                // Создание заголовка даты (спойлер)
+                const dateHeader = document.createElement('div');
+                dateHeader.className = 'history-date';
+                dateHeader.innerHTML = `${date} <span>(${entries.length} записей)</span>`;
+                dateHeader.onclick = function() {
+                    const entriesDiv = this.nextElementSibling;
+                    entriesDiv.style.display = entriesDiv.style.display === 'none' || entriesDiv.style.display === '' ? 'block' : 'none';
+                };
+                historyDay.appendChild(dateHeader);
+                
+                // Создание контейнера для записей этой даты
+                const entriesDiv = document.createElement('div');
+                entriesDiv.className = 'history-entries';
+                
+                // Добавление всех записей для этой даты
+                entries.forEach(entry => {
+                    const entryDiv = document.createElement('div');
+                    entryDiv.className = 'history-entry';
+                    
+                    // Время записи
+                    const timeDiv = document.createElement('div');
+                    timeDiv.className = 'history-time';
+                    timeDiv.textContent = new Date(entry.date).toLocaleTimeString();
+                    entryDiv.appendChild(timeDiv);
+                    
+                    // Тип записи
+                    const typeDiv = document.createElement('div');
+                    typeDiv.className = 'history-type';
+                    typeDiv.textContent = getTypeLabel(entry.type);
+                    entryDiv.appendChild(typeDiv);
+                    
+                    // Данные записи
+                    const dataDiv = document.createElement('div');
+                    dataDiv.className = 'history-data';
+                    
+                    if (entry.type === 'money') {
+                        // Для денег отображаем только итоговую сумму
+                        const totalMatch = entry.data.match(/Итого: (\d+) .+?, (\d+) .+?, (\d+)/);
+                        if (totalMatch) {
+                            dataDiv.innerHTML = `${totalMatch[1]} <img src="images/1.svg" class="coin" alt="золото">, 
+                                               ${totalMatch[2]} <img src="images/2.svg" class="coin" alt="серебро">, 
+                                               ${totalMatch[3]} <img src="images/3.svg" class="coin" alt="медь">`;
+                        } else {
+                            dataDiv.textContent = 'Нет данных';
+                        }
+                    } else {
+                        // Для других типов показываем количество элементов
+                        const count = Object.keys(entry.data).length;
+                        dataDiv.textContent = `Элементов: ${count}`;
+                        
+                        // Добавляем кнопку "Подробнее" для просмотра всех данных
+                        const detailsButton = document.createElement('button');
+                        detailsButton.textContent = 'Подробнее';
+                        detailsButton.className = 'spoiler-button';
+                        detailsButton.style.marginLeft = '10px';
+                        detailsButton.onclick = function() {
+                            const detailsDiv = this.nextElementSibling;
+                            detailsDiv.style.display = detailsDiv.style.display === 'none' || detailsDiv.style.display === '' ? 'block' : 'none';
+                        };
+                        dataDiv.appendChild(detailsButton);
+                        
+                        // Создаем скрытый div для подробностей
+                        const detailsDiv = document.createElement('div');
+                        detailsDiv.style.display = 'none';
+                        detailsDiv.style.marginTop = '10px';
+                        
+                        const detailsList = document.createElement('ul');
+                        for (const [key, value] of Object.entries(entry.data)) {
+                            const li = document.createElement('li');
+                            if (entry.type === 'attacks' || entry.type === 'items') {
+                                const img = document.createElement('img');
+                                img.src = `images/${key}.gif`;
+                                img.alt = key;
+                                img.className = 'item-image';
+                                img.style.width = '50px';
+                                img.style.height = '50px';
+                                img.onerror = () => { img.style.display = 'none'; };
+                                li.appendChild(img);
+                            }
+                            li.innerHTML += `${key}: ${value}`;
+                            detailsList.appendChild(li);
+                        }
+                        detailsDiv.appendChild(detailsList);
+                        dataDiv.appendChild(detailsDiv);
+                    }
+                    
+                    entryDiv.appendChild(dataDiv);
+                    entriesDiv.appendChild(entryDiv);
+                });
+                
+                historyDay.appendChild(entriesDiv);
+                historyContainer.appendChild(historyDay);
+            }
+        }
+        
+        // Функция для получения метки типа записи
+        function getTypeLabel(type) {
+            switch(type) {
+                case 'attacks': return 'Нападения';
+                case 'money': return 'Деньги';
+                case 'items': return 'Предметы';
+                default: return type;
+            }
+        }
+        
+        // Функция для загрузки истории при загрузке страницы
+        function loadHistory() {
+            displayHistory();
+        }
+        
+        // Функция для очистки истории
+        function clearHistory() {
+            localStorage.removeItem('log-history');
+            displayHistory();
+        }
+        
+        // Функция обработки двойного щелчка на записи истории
+        function handleHistoryEntryDblClick(event) {
+            // Ищем ближайший родительский элемент с классом history-entry
+            const historyEntry = event.target.closest('.history-entry');
+            if (!historyEntry) return;
+            
+            // Запрашиваем подтверждение у пользователя
+            if (confirm('Удалить эту запись из истории?')) {
+                // Находим индекс записи
+                const allEntries = document.querySelectorAll('.history-entry');
+                const index = Array.from(allEntries).indexOf(historyEntry);
+                
+                if (index !== -1) {
+                    // Загружаем историю
+                    let history = JSON.parse(localStorage.getItem('log-history') || '[]');
+                    
+                    // Определяем, к какой дате относится запись
+                    const dateContainer = historyEntry.closest('.history-entries');
+                    const dateEntries = dateContainer.querySelectorAll('.history-entry');
+                    const entryIndexInDate = Array.from(dateEntries).indexOf(historyEntry);
+                    
+                    // Находим дату
+                    const dateHeader = dateContainer.previousElementSibling;
+                    const dateText = dateHeader.textContent.split(' (')[0];
+                    
+                    // Фильтруем записи по дате и находим нужную
+                    const entriesForDate = history.filter(entry => {
+                        return new Date(entry.date).toLocaleDateString() === dateText;
+                    });
+                    
+                    if (entriesForDate.length > entryIndexInDate) {
+                        // Находим запись в общем массиве
+                        const entryToRemove = entriesForDate[entryIndexInDate];
+                        const indexInFullHistory = history.findIndex(entry => entry.date === entryToRemove.date);
+                        
+                        if (indexInFullHistory !== -1) {
+                            // Удаляем запись
+                            history.splice(indexInFullHistory, 1);
+                            localStorage.setItem('log-history', JSON.stringify(history));
+                            
+                            // Обновляем отображение
+                            displayHistory();
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Функция для загрузки статистики
+        function loadStats() {
+            displayMonstersStats();
+            displayMoneyStats();
+            displayItemsStats(); // Обновлено для отображения частоты выпадения предметов
+        }
+        
+        // Функция для отображения статистики по монстрам
+        function displayMonstersStats() {
+            const statsContainer = document.getElementById('total-monsters-stats');
+            const totalStats = getTotalMonstersStats();
+            
+            if (Object.keys(totalStats).length === 0) {
+                statsContainer.innerHTML = '<p>Нет данных о монстрах</p>';
+                return;
+            }
+            
+            // Сортируем монстров по количеству убийств (по убыванию)
+            const sortedMonsters = Object.entries(totalStats).sort((a, b) => b[1] - a[1]);
+            
+            let html = '<table class="stats-table">';
+            html += '<tr><th>Монстр</th><th>Количество</th></tr>';
+            
+            for (const [monster, count] of sortedMonsters) {
+                html += `<tr>
+                    <td>
+                        <img src="images/${monster}.gif" class="item-image" style="width: 30px; height: 30px;" onerror="this.style.display='none'">
+                        ${monster}
+                    </td>
+                    <td>${count}</td>
+                </tr>`;
+            }
+            
+            html += '</table>';
+            
+            // Добавляем общее количество
+            const totalCount = sortedMonsters.reduce((sum, [_, count]) => sum + count, 0);
+            html += `<p style="text-align: center;"><strong>Всего монстров убито:</strong> ${totalCount}</p>`;
+            
+            statsContainer.innerHTML = html;
+        }
+        
+        // Функция для получения общей статистики по монстрам
+        function getTotalMonstersStats() {
+            // Получаем все записи истории
+            const history = JSON.parse(localStorage.getItem('log-history') || '[]');
+            
+            // Фильтруем только записи типа 'attacks'
+            const attackEntries = history.filter(entry => entry.type === 'attacks');
+            
+            // Создаем общую статистику
+            const totalStats = {};
+            
+            // Суммируем все результаты
+            attackEntries.forEach(entry => {
+                for (const [monster, count] of Object.entries(entry.data)) {
+                    totalStats[monster] = (totalStats[monster] || 0) + count;
+                }
+            });
+            
+            return totalStats;
+        }
+        
+        // Функция для отображения статистики по деньгам
+        function displayMoneyStats() {
+            const statsContainer = document.getElementById('total-money-stats');
+            const totalCopper = getTotalMoneyStats();
+            
+            if (totalCopper === 0) {
+                statsContainer.innerHTML = '<p>Нет данных о деньгах</p>';
+                return;
+            }
+            
+            // Преобразуем медь в золото, серебро и медь
+            const gold = Math.floor(totalCopper / 10000);
+            const remainder = totalCopper % 10000;
+            const silver = Math.floor(remainder / 100);
+            const copper = remainder % 100;
+            
+            let html = `<p style="text-align: center;"><strong>Всего заработано:</strong></p>`;
+            html += `<div class="money-stats" style="text-align: center;">
+                ${gold} <img src="images/1.svg" class="coin" alt="золото">, 
+                ${silver} <img src="images/2.svg" class="coin" alt="серебро">, 
+                ${copper} <img src="images/3.svg" class="coin" alt="медь">
+            </div>`;
+            
+            statsContainer.innerHTML = html;
+        }
+        
+        // Функция для получения общей статистики по деньгам
+        function getTotalMoneyStats() {
+            // Получаем все записи истории
+            const history = JSON.parse(localStorage.getItem('log-history') || '[]');
+            
+            // Фильтруем только записи типа 'money'
+            const moneyEntries = history.filter(entry => entry.type === 'money');
+            
+            // Счетчик для общей суммы меди
+            let totalCopper = 0;
+            
+            // Суммируем все результаты
+            moneyEntries.forEach(entry => {
+                const totalMatch = entry.data.match(/Итого: (\d+) .+?, (\d+) .+?, (\d+)/);
+                if (totalMatch) {
+                    const gold = parseInt(totalMatch[1]) || 0;
+                    const silver = parseInt(totalMatch[2]) || 0;
+                    const copper = parseInt(totalMatch[3]) || 0;
+                    totalCopper += gold * 10000 + silver * 100 + copper;
+                }
+            });
+            
+            return totalCopper;
+        }
+        
+        // Функция для отображения статистики по предметам
+        function displayItemsStats() {
+            const statsContainer = document.getElementById('total-items-stats');
+            const frequencyStats = getTotalItemsStatsWithFrequency();
+            
+            if (Object.keys(frequencyStats).length === 0) {
+                statsContainer.innerHTML = '<p>Нет данных о предметах</p>';
+                return;
+            }
+            
+            // Сортируем предметы по количеству выпадений (по убыванию)
+            const sortedItems = Object.entries(frequencyStats).sort((a, b) => b[1].count - a[1].count);
+            
+            let html = '<table class="stats-table">';
+            html += '<tr><th>Предмет</th><th>Количество выпадений</th><th>Частота (%)</th><th>Шкала</th></tr>';
+            
+            for (const [item, data] of sortedItems) {
+                html += `<tr>
+                    <td>
+                        <img src="images/${item}.gif" class="item-image" style="width: 30px; height: 30px;" onerror="this.style.display='none'">
+                        ${item}
+                    </td>
+                    <td>${data.count}</td>
+                    <td>${data.frequency}</td>
+                    <td>
+                        <div class="scale">
+                            <div style="width: ${data.frequency}%;"></div>
+                        </div>
+                    </td>
+                </tr>`;
+            }
+            
+            html += '</table>';
+            
+            // Добавляем общее количество
+            const totalCount = Object.values(frequencyStats).reduce((sum, data) => sum + data.count, 0);
+            html += `<p style="text-align: center;"><strong>Всего предметов собрано:</strong> ${totalCount}</p>`;
+            
+            statsContainer.innerHTML = html;
+        }
+
+        // Функция для получения общей статистики по предметам с частотой
+        function getTotalItemsStatsWithFrequency() {
+            // Получаем все записи истории
+            const history = JSON.parse(localStorage.getItem('log-history') || '[]');
+            
+            // Фильтруем только записи типа 'items'
+            const itemEntries = history.filter(entry => entry.type === 'items');
+            
+            // Создаем общую статистику
+            const totalStats = {};
+            
+            // Суммируем все результаты
+            itemEntries.forEach(entry => {
+                for (const [item, count] of Object.entries(entry.data)) {
+                    totalStats[item] = (totalStats[item] || 0) + count;
+                }
+            });
+            
+            // Вычисляем общее количество выпадений
+            const totalCount = Object.values(totalStats).reduce((sum, count) => sum + count, 0);
+            
+            // Создаем объект для хранения частоты
+            const frequencyStats = {};
+            
+            // Вычисляем частоту для каждого предмета
+            for (const [item, count] of Object.entries(totalStats)) {
+                frequencyStats[item] = {
+                    count: count,
+                    frequency: ((count / totalCount) * 100).toFixed(2) // Форматируем до двух знаков после запятой
+                };
+            }
+            
+            return frequencyStats;
+        }
+        
+        // Функция для очистки всей статистики
+        function clearAllStats() {
+            if (confirm('Вы уверены, что хотите сбросить всю статистику? Это действие нельзя отменить.')) {
+                localStorage.removeItem('log-history');
+                localStorage.removeItem('attack-records');
+                localStorage.removeItem('money-record');
+                
+                // Обновляем отображение
+                loadRecords();
+                loadHistory();
+                loadStats();
+                
+                alert('Вся статистика успешно сброшена.');
+            }
+        }
+    </script>
+</body>
+</html>

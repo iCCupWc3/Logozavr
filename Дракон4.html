@@ -535,66 +535,36 @@ function countItems() {
     
     // Перебираем строки лога
     logLines.forEach(line => {
+        // Для каждого выбранного предмета проверяем, есть ли он в строке
         selectedItems.forEach(item => {
+            // Экранируем специальные символы в названии предмета
             const escapedItem = item.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+            
+            // Создаем регулярное выражение для конкретного предмета
             const itemRegex = new RegExp(`${escapedItem}\\s+(\\d+)\\s+шт`, 'g');
+            
+            // Поиск предмета в строке
             let match;
             while ((match = itemRegex.exec(line)) !== null) {
+                // Извлекаем количество
                 const quantity = parseInt(match[1]) || 1;
+                
+                // Добавляем к общему счету
                 itemCounts[item] = (itemCounts[item] || 0) + quantity;
             }
         });
     });
-
-    // Обчислення частоти
-    const totalCount = Object.values(itemCounts).reduce((sum, count) => sum + count, 0);
-    const frequencyStats = {};
+    
+    // Calculate frequency
+    const totalItems = Object.values(itemCounts).reduce((sum, count) => sum + count, 0);
+    const frequencyCounts = {};
     for (const [item, count] of Object.entries(itemCounts)) {
-        frequencyStats[item] = {
-            count: count,
-            frequency: ((count / totalCount) * 100).toFixed(2) // Формат до двох знаків після коми
-        };
+        frequencyCounts[item] = ((count / totalItems) * 100).toFixed(2) + '%';
     }
 
-    displayResults(frequencyStats, 'Результати підрахунку предметів:', true);
+    displayResults(itemCounts, 'Результаты подсчета предметов:', true);
+}
 
-            const selectedItems = Array.from(document.querySelectorAll('.item-checkbox:checked')).map(checkbox => checkbox.value);
-            
-            if (selectedItems.length === 0) {
-                alert('Выберите хотя бы один предмет для поиска.');
-                return;
-            }
-            
-            // Создаем счетчик для хранения результатов
-            const itemCounts = {};
-            
-            // Разбиваем лог на строки
-            const logLines = logInput.split('\n');
-            
-            // Перебираем строки лога
-            logLines.forEach(line => {
-                // Для каждого выбранного предмета проверяем, есть ли он в строке
-                selectedItems.forEach(item => {
-                    // Экранируем специальные символы в названии предмета
-                    const escapedItem = item.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-                    
-                    // Создаем регулярное выражение для конкретного предмета
-                    const itemRegex = new RegExp(`${escapedItem}\\s+(\\d+)\\s+шт`, 'g');
-                    
-                    // Поиск предмета в строке
-                    let match;
-                    while ((match = itemRegex.exec(line)) !== null) {
-                        // Извлекаем количество
-                        const quantity = parseInt(match[1]) || 1;
-                        
-                        // Добавляем к общему счету
-                        itemCounts[item] = (itemCounts[item] || 0) + quantity;
-                    }
-                });
-            });
-            
-            displayResults(itemCounts, 'Результаты подсчета предметов:', true);
-        }
 
         function toggleSelectAll() {
             const checkboxes = document.querySelectorAll('.item-checkbox');

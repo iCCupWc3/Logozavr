@@ -56,11 +56,26 @@ function countMoney() {
     
     const combinedTotalCopper = totalCopper + magicTotalCopper;
 
+    // Анализируем данные о монстрах
+    const monsterData = extractMonsterData(logLines);
+    
+    // Обновляем статистику монстров
+    updateMonsterStats(monsterData);
+    
+    // Проверяем и обновляем рекорды
+    checkAndUpdateMoneyRecords(combinedTotalCopper, monsterData);
+    
+    // Обновляем отображение статистики по монстрам
+    displayMonsterStats();
+
     const moneyResult = formatMoneyResult(totalCopper, 'Выбито с боев') +
                        formatMoneyResult(magicTotalCopper, 'Благодаря магическим эффектам') +
                        formatMoneyResult(combinedTotalCopper, 'Итого');
 
     displayMoneyResults(moneyResult, 'Результаты подсчета денег:');
+    
+    // Добавляем в историю, если превышен рекорд
+    addToHistory(combinedTotalCopper);
 }
 
 function countItems() {
@@ -296,713 +311,576 @@ function displayResults(results, title, includeImages = false) {
     resultsDiv.appendChild(container);
 }
 
-function displayMoneyResults(results, title) {
+function displayMoneyResults(html, title) {
     const resultsDiv = document.getElementById('results');
-    resultsDiv.innerHTML = `<h2 style="font-weight: bold;">${title}</h2>`; // Заголовок жирным
-    const div = document.createElement('div');
-    div.className = 'results-column';
-    div.innerHTML = results;
-    resultsDiv.appendChild(div);
-    
-    // Обновление рекордов денег и истории
-    updateMoneyRecords(results);
-    addHistoryEntry('money', results);
+    resultsDiv.innerHTML = `<h2 style="font-weight: bold;">${title}</h2>${html}`; // Заголовок жирным
 }
 
-// Обновленная функция displayResults для учета рекордов и истории
-function displayResults(results, title, includeImages = false) {
-    const resultsDiv = document.getElementById('results');
-    resultsDiv.innerHTML = `<h2 style="font-weight: bold;">${title}</h2>`; // Заголовок жирным
-    const container = document.createElement('div');
-    container.style.display = 'flex';
-    container.style.flexWrap = 'wrap';
+function addCustomData() {
+    const customDataInput = document.getElementById('customDataInput');
+    const customData = customDataInput.value.trim();
     
-    let row = document.createElement('div');
-    row.style.display = 'flex';
-    row.style.width = '100%';
-
-    let count = 0;
-
-    for (const [key, value] of Object.entries(results)) {
-        const itemDiv = document.createElement('div');
-        itemDiv.style.flex = '1 0 30%'; // Занимает 30% ширины, чтобы вмещать 3 предмета в строке
-        itemDiv.style.boxSizing = 'border-box';
-        itemDiv.style.padding = '10px'; // Отступы для визуального разделения
-        const imageSize = title === 'Результаты нападений:' ? '150px' : '50px'; // Условие для размера изображения
-        itemDiv.innerHTML = `${includeImages ? `<img src="images/${key}.gif" class="item-image" style="width: ${imageSize}; height: ${imageSize};" alt="${key}">` : ''} ${key}: ${value}`;
-        
-        row.appendChild(itemDiv);
-        count++;
-
-        // Если добавлено 3 предмета, добавляем строку в контейнер и создаем новую
-        if (count % 3 === 0) {
-            container.appendChild(row);
-            row = document.createElement('div');
-            row.style.display = 'flex';
-            row.style.width = '100%';
-        }
-    }
-
-    // Добавляем оставшиеся элементы, если они есть
-    if (count % 3 !== 0) {
-        container.appendChild(row);
-    }
-
-    resultsDiv.appendChild(container);
-    
-    // Если это результаты нападений, обновляем рекорды
-    if (title === 'Результаты нападений:') {
-        updateAttackRecords(results);
-        addHistoryEntry('attacks', results);
-    } else if (title === 'Результаты подсчета предметов:') {
-        addHistoryEntry('items', results);
-    }
-}
-
-// Функция для обновления рекордов нападений
-function updateAttackRecords(results) {
-    // Загрузка текущих рекордов
-    const records = JSON.parse(localStorage.getItem('attack-records') || '{}');
-    let updated = false;
-    
-    // Проверка и обновление рекордов
-    for (const [monster, count] of Object.entries(results)) {
-        if (!records[monster] || records[monster].count < count) {
-            records[monster] = {
-                count: count,
-                date: new Date().toISOString()
-            };
-            updated = true;
-        }
-    }
-    
-    // Сохранение рекордов и обновление отображения
-    if (updated) {
-                localStorage.setItem('attack-records', JSON.stringify(records));
-        displayAttackRecords();
-    }
-}
-
-// Функция для обновления рекордов денег
-function updateMoneyRecords(resultHTML) {
-    // Извлечение итогового значения меди из HTML
-    const totalMatch = resultHTML.match(/Итого: (\d+) .+?, (\d+) .+?, (\d+)/);
-    const gold = parseInt(totalMatch[1]);
-    const silver = parseInt(totalMatch[2]);
-    const copper = parseInt(totalMatch[3]);
-    const totalCopper = gold * 10000 + silver * 100 + copper;
-    
-    // Загрузка текущего рекорда
-    const record = JSON.parse(localStorage.getItem('money-record') || '{"totalCopper": 0}');
-    
-    // Проверка и обновление рекорда
-    if (totalCopper > record.totalCopper) {
-        record.totalCopper = totalCopper;
-        record.gold = gold;
-        record.silver = silver;
-        record.copper = copper;
-        record.date = new Date().toISOString();
-        
-        localStorage.setItem('money-record', JSON.stringify(record));
-        displayMoneyRecords();
-    }
-}
-
-// Функция для отображения рекордов нападений
-function displayAttackRecords() {
-    const recordsContainer = document.getElementById('attack-records');
-    recordsContainer.innerHTML = '';
-    
-    const records = JSON.parse(localStorage.getItem('attack-records') || '{}');
-    const sortedRecords = Object.entries(records).sort((a, b) => b[1].count - a[1].count);
-    
-    if (sortedRecords.length === 0) {
-        recordsContainer.innerHTML = '<p>Нет рекордов</p>';
+    if (!customData) {
+        alert('Пожалуйста, введите пример строки для анализа.');
         return;
     }
     
-    for (const [monster, data] of sortedRecords) {
-        const recordItem = document.createElement('div');
-        recordItem.className = 'record-item';
+    // Получаем указанный формат данных (обычные деньги или магические)
+    const dataFormatSelect = document.getElementById('dataFormatSelect');
+    const isMagicFormat = dataFormatSelect.value === 'magic';
+    
+    // Регулярные выражения для поиска
+    const gscRegex = /(\d+)\s+(\d+)\s+(\d+)/; // золото, серебро, медь
+    const scRegex = /(\d+)\s+(\d+)(?!\s+\d)/; // серебро, медь
+    
+    // Пытаемся найти соответствие
+    const gscMatch = customData.match(gscRegex);
+    const scMatch = !gscMatch && customData.match(scRegex);
+    
+    if (gscMatch) {
+        // Если найдено соответствие с тремя числами (золото, серебро, медь)
+        const placeholderText = isMagicFormat 
+            ? `Благодаря магическим эффектам, вы сумели обогатиться еще на ${gscMatch[0]}`
+            : `Вы получили: ${gscMatch[0]}`;
         
-        // Добавление изображения (если есть)
-        const img = document.createElement('img');
-        img.src = `images/${monster}.gif`;
-        img.alt = monster;
-        img.className = 'item-image';
-        img.style.width = '150px'; // Установка ширины изображения
-        img.style.height = '150px'; // Установка высоты изображения
-        img.onerror = () => { img.style.display = 'none'; };
-        recordItem.appendChild(img);
+        customDataInput.value = placeholderText;
+    } else if (scMatch) {
+        // Если найдено соответствие с двумя числами (серебро, медь)
+        const placeholderText = isMagicFormat 
+            ? `Благодаря магическим эффектам, вы сумели обогатиться еще на ${scMatch[0]}`
+            : `Вы получили: ${scMatch[0]}`;
         
-        // Информация о рекорде
-        const info = document.createElement('div');
-        info.className = 'record-info';
-        
-        const monsterName = document.createElement('div');
-        monsterName.textContent = `${monster}: ${data.count}`;
-        info.appendChild(monsterName);
-        
-        const date = document.createElement('div');
-        date.className = 'record-date';
-        date.textContent = new Date(data.date).toLocaleDateString();
-        info.appendChild(date);
-        
-        recordItem.appendChild(info);
-        
-        // Кнопки редактирования и удаления
-        const editButton = document.createElement('button');
-        editButton.innerHTML = '&#9998;'; // Иконка ручки
-        editButton.title = 'Редактировать';
-        editButton.onclick = () => editRecord('attack-records', monster);
-        recordItem.appendChild(editButton);
-        
-        const deleteButton = document.createElement('button');
-        deleteButton.innerHTML = '&#10006;'; // Иконка крестика
-        deleteButton.title = 'Удалить';
-        deleteButton.onclick = () => deleteRecord('attack-records', monster);
-        recordItem.appendChild(deleteButton);
-        
-        recordsContainer.appendChild(recordItem);
+        customDataInput.value = placeholderText;
+    } else {
+        alert('Не удалось найти подходящий формат денег. Пожалуйста, убедитесь, что вы ввели корректные данные.');
     }
 }
 
-// Функция для отображения рекордов денег
-function displayMoneyRecords() {
-    const recordsContainer = document.getElementById('money-records');
-    recordsContainer.innerHTML = '';
-    
-    const record = JSON.parse(localStorage.getItem('money-record') || '{"totalCopper": 0}');
-    
-    if (record.totalCopper === 0) {
-        recordsContainer.innerHTML = '<p>Нет рекордов</p>';
-        return;
-    }
-    
-    const recordItem = document.createElement('div');
-    recordItem.className = 'record-item';
-    
-    // Информация о рекорде
-    const info = document.createElement('div');
-    info.className = 'record-info';
-    
-    const moneyAmount = document.createElement('div');
-    moneyAmount.innerHTML = `Рекорд: <span class="total-result">${record.gold || 0} <img src="images/1.svg" class="coin" alt="золото">, 
-                             ${record.silver || 0} <img src="images/2.svg" class="coin" alt="серебро">, 
-                             ${record.copper || 0} <img src="images/3.svg" class="coin" alt="медь"></span>`;
-    info.appendChild(moneyAmount);
-    
-    if (record.date) {
-        const date = document.createElement('div');
-        date.className = 'record-date';
-        date.textContent = new Date(record.date).toLocaleDateString();
-        info.appendChild(date);
-    }
-    
-    recordItem.appendChild(info);
-    
-    // Кнопки редактирования и удаления
-    const editButton = document.createElement('button');
-    editButton.innerHTML = '&#9998;'; // Иконка ручки
-    editButton.title = 'Редактировать';
-    editButton.onclick = () => editMoneyRecord();
-    recordItem.appendChild(editButton);
-    
-    const deleteButton = document.createElement('button');
-    deleteButton.innerHTML = '&#10006;'; // Иконка крестика
-    deleteButton.title = 'Удалить';
-    deleteButton.onclick = () => deleteMoneyRecord();
-    recordItem.appendChild(deleteButton);
-    
-    recordsContainer.appendChild(recordItem);
-}
-
-// Функция для удаления рекорда нападений
-function deleteRecord(recordType, monster) {
-    if (confirm(`Вы уверены, что хотите удалить рекорд для ${monster}?`)) {
-        const records = JSON.parse(localStorage.getItem(recordType) || '{}');
-        delete records[monster];
-        localStorage.setItem(recordType, JSON.stringify(records));
-        displayAttackRecords(); // Обновляем отображение
-    }
-}
-
-// Функция для удаления рекорда денег
-function deleteMoneyRecord() {
-    if (confirm('Вы уверены, что хотите удалить рекорд денег?')) {
-        localStorage.removeItem('money-record');
-        displayMoneyRecords(); // Обновляем отображение
-    }
-}
-
-// Функция для редактирования рекорда нападений
-function editRecord(recordType, monster) {
-    const records = JSON.parse(localStorage.getItem(recordType) || '{}');
-    const newCount = prompt(`Введите новое количество для ${monster}:`, records[monster].count);
-    
-    if (newCount !== null) {
-        records[monster].count = parseInt(newCount);
-        records[monster].date = new Date().toISOString(); // Обновляем дату
-        localStorage.setItem(recordType, JSON.stringify(records));
-        displayAttackRecords(); // Обновляем отображение
-    }
-}
-
-// Функция для редактирования рекорда денег
-function editMoneyRecord() {
-    const record = JSON.parse(localStorage.getItem('money-record') || '{"totalCopper": 0}');
-    const newGold = prompt(`Введите новое количество золота:`, record.gold);
-    const newSilver = prompt(`Введите новое количество серебра:`, record.silver);
-    const newCopper = prompt(`Введите новое количество меди:`, record.copper);
-    
-    if (newGold !== null && newSilver !== null && newCopper !== null) {
-        record.gold = parseInt(newGold);
-        record.silver = parseInt(newSilver);
-        record.copper = parseInt(newCopper);
-        record.date = new Date().toISOString(); // Обновляем дату
-        localStorage.setItem('money-record', JSON.stringify(record));
-        displayMoneyRecords(); // Обновляем отображение
-    }
-}
-
-// Функция для загрузки рекордов при загрузке страницы
 function loadRecords() {
-    displayAttackRecords();
-    displayMoneyRecords();
-}
-
-// Функция для очистки рекордов
-function clearRecords(recordType) {
-    if (recordType === 'attack-records') {
-        localStorage.removeItem('attack-records');
-        displayAttackRecords();
-    } else if (recordType === 'money-record') {
-        localStorage.removeItem('money-record');
-        displayMoneyRecords();
+    try {
+        const recordContainer = document.getElementById('record-container');
+        const moneyRecord = localStorage.getItem('moneyRecord') || '0';
+        
+        // Преобразуем общее количество меди в золото, серебро и медь
+        const totalCopper = parseInt(moneyRecord);
+        const gold = Math.floor(totalCopper / 10000);
+        const remainder = totalCopper % 10000;
+        const silver = Math.floor(remainder / 100);
+        const copper = remainder % 100;
+        
+        // Создаем строку для отображения рекорда
+        const recordHTML = `
+            <div>
+                <h2>Рекорд:</h2>
+                <p>${gold} <img src="images/1.svg" class="coin" alt="золото">, ${silver} <img src="images/2.svg" class="coin" alt="серебро">, ${copper} <img src="images/3.svg" class="coin" alt="медь"></p>
+            </div>
+        `;
+        
+        recordContainer.innerHTML = recordHTML;
+    } catch (error) {
+        console.error('Error loading records:', error);
     }
 }
 
-// Функция для добавления записи в историю
-function addHistoryEntry(type, data) {
-    // Загрузка текущей истории
-    let history = JSON.parse(localStorage.getItem('log-history') || '[]');
-    
-    // Создание новой записи
-    const entry = {
-        type: type,
-        data: data,
-        date: new Date().toISOString()
-    };
-    
-    // Добавление записи в историю
-    history.unshift(entry);
-    
-    // Ограничение истории (например, до 100 записей)
-    if (history.length > 100) {
-        history = history.slice(0, 100);
-    }
-    
-    // Сохранение истории
-    localStorage.setItem('log-history', JSON.stringify(history));
-    
-    // Обновляем отображение истории и статистики
-    displayHistory();
-    loadStats();
-}
-
-// Функция для отображения истории
-function displayHistory() {
-    const historyContainer = document.getElementById('history-container');
-    historyContainer.innerHTML = '';
-    
-    const history = JSON.parse(localStorage.getItem('log-history') || '[]');
-    
-    if (history.length === 0) {
-        historyContainer.innerHTML = '<p>История пуста</p>';
-        return;
-    }
-    
-    // Группировка истории по датам (без учета времени)
-    const groupedByDate = {};
-    history.forEach(entry => {
-        const date = new Date(entry.date).toLocaleDateString();
-        if (!groupedByDate[date]) {
-            groupedByDate[date] = [];
+function addToHistory(totalCopper) {
+    try {
+        // Получаем текущий рекорд
+        const currentRecord = parseInt(localStorage.getItem('moneyRecord')) || 0;
+        
+        // Если новое значение больше рекорда, обновляем рекорд и добавляем в историю
+        if (totalCopper > currentRecord) {
+            localStorage.setItem('moneyRecord', totalCopper.toString());
+            
+            // Обновляем отображение рекорда
+            loadRecords();
+            
+            // Получаем текущую историю
+            const history = JSON.parse(localStorage.getItem('moneyHistory')) || [];
+            
+            // Добавляем новую запись в начало массива
+            const now = new Date();
+            const formattedDate = `${now.getDate()}.${now.getMonth() + 1}.${now.getFullYear()} ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+            
+            history.unshift({
+                date: formattedDate,
+                amount: totalCopper
+            });
+            
+            // Ограничиваем историю 10 записями
+            const limitedHistory = history.slice(0, 10);
+            
+            // Сохраняем обновленную историю
+            localStorage.setItem('moneyHistory', JSON.stringify(limitedHistory));
+            
+            // Обновляем отображение истории
+            loadHistory();
         }
-        groupedByDate[date].push(entry);
-    });
-    
-    // Отображение истории по дням в виде спойлеров
-    for (const [date, entries] of Object.entries(groupedByDate)) {
-        const historyDay = document.createElement('div');
-        historyDay.className = 'history-day';
-        
-        // Создание заголовка даты (спойлер)
-        const dateHeader = document.createElement('div');
-        dateHeader.className = 'history-date';
-        dateHeader.innerHTML = `${date} <span>(${entries.length} записей)</span>`;
-        dateHeader.onclick = function() {
-            const entriesDiv = this.nextElementSibling;
-            entriesDiv.style.display = entriesDiv.style.display === 'none' || entriesDiv.style.display === '' ? 'block' : 'none';
-        };
-        historyDay.appendChild(dateHeader);
-        
-        // Создание контейнера для записей этой даты
-        const entriesDiv = document.createElement('div');
-        entriesDiv.className = 'history-entries';
-        
-        // Добавление всех записей для этой даты
-        entries.forEach(entry => {
-            const entryDiv = document.createElement('div');
-            entryDiv.className = 'history-entry';
-            
-            // Время записи
-            const timeDiv = document.createElement('div');
-            timeDiv.className = 'history-time';
-            timeDiv.textContent = new Date(entry.date).toLocaleTimeString();
-            entryDiv.appendChild(timeDiv);
-            
-            // Тип записи
-            const typeDiv = document.createElement('div');
-            typeDiv.className = 'history-type';
-            typeDiv.textContent = getTypeLabel(entry.type);
-            entryDiv.appendChild(typeDiv);
-            
-            // Данные записи
-            const dataDiv = document.createElement('div');
-            dataDiv.className = 'history-data';
-            
-            if (entry.type === 'money') {
-                // Для денег отображаем только итоговую сумму
-                const totalMatch = entry.data.match(/Итого: (\d+) .+?, (\d+) .+?, (\d+)/);
-                if (totalMatch) {
-                    dataDiv.innerHTML = `${totalMatch[1]} <img src="images/1.svg" class="coin" alt="золото">, 
-                                       ${totalMatch[2]} <img src="images/2.svg" class="coin" alt="серебро">, 
-                                       ${totalMatch[3]} <img src="images/3.svg" class="coin" alt="медь">`;
-                } else {
-                    dataDiv.textContent = 'Нет данных';
-                }
-            } else {
-                // Для других типов показываем количество элементов
-                const count = Object.keys(entry.data).length;
-                dataDiv.textContent = `Элементов: ${count}`;
-                
-                // Добавляем кнопку "Подробнее" для просмотра всех данных
-                const detailsButton = document.createElement('button');
-                detailsButton.textContent = 'Подробнее';
-                detailsButton.className = 'spoiler-button';
-                detailsButton.style.marginLeft = '10px';
-                detailsButton.onclick = function() {
-                    const detailsDiv = this.nextElementSibling;
-                    detailsDiv.style.display = detailsDiv.style.display === 'none' || detailsDiv.style.display === '' ? 'block' : 'none';
-                };
-                dataDiv.appendChild(detailsButton);
-                
-                // Создаем скрытый div для подробностей
-                const detailsDiv = document.createElement('div');
-                detailsDiv.style.display = 'none';
-                detailsDiv.style.marginTop = '10px';
-                
-                const detailsList = document.createElement('ul');
-                for (const [key, value] of Object.entries(entry.data)) {
-                    const li = document.createElement('li');
-                    if (entry.type === 'attacks' || entry.type === 'items') {
-                        const img = document.createElement('img');
-                        img.src = `images/${key}.gif`;
-                        img.alt = key;
-                        img.className = 'item-image';
-                        img.style.width = '50px';
-                        img.style.height = '50px';
-                        img.onerror = () => { img.style.display = 'none'; };
-                        li.appendChild(img);
-                    }
-                    li.innerHTML += `${key}: ${value}`;
-                    detailsList.appendChild(li);
-                }
-                detailsDiv.appendChild(detailsList);
-                dataDiv.appendChild(detailsDiv);
-            }
-            
-            entryDiv.appendChild(dataDiv);
-            entriesDiv.appendChild(entryDiv);
-        });
-        
-        historyDay.appendChild(entriesDiv);
-        historyContainer.appendChild(historyDay);
+    } catch (error) {
+        console.error('Error adding to history:', error);
     }
 }
 
-// Функция для получения метки типа записи
-function getTypeLabel(type) {
-    switch(type) {
-        case 'attacks': return 'Нападения';
-        case 'money': return 'Деньги';
-        case 'items': return 'Предметы';
-        default: return type;
-    }
-}
-
-// Функция для загрузки истории при загрузке страницы
 function loadHistory() {
-    displayHistory();
+    try {
+        const historyContainer = document.getElementById('history-container');
+        const history = JSON.parse(localStorage.getItem('moneyHistory')) || [];
+        
+        if (history.length === 0) {
+            historyContainer.innerHTML = '<p>История пуста</p>';
+            return;
+        }
+        
+        const historyHTML = history.map((entry, index) => {
+            // Преобразуем общее количество меди в золото, серебро и медь
+            const totalCopper = entry.amount;
+            const gold = Math.floor(totalCopper / 10000);
+            const remainder = totalCopper % 10000;
+            const silver = Math.floor(remainder / 100);
+            const copper = remainder % 100;
+            
+            return `
+                <div class="history-entry" data-index="${index}">
+                    <span class="history-date">${entry.date}</span>
+                    <span class="history-amount">${gold} <img src="images/1.svg" class="coin" alt="золото">, ${silver} <img src="images/2.svg" class="coin" alt="серебро">, ${copper} <img src="images/3.svg" class="coin" alt="медь"></span>
+                </div>
+            `;
+        }).join('');
+        
+        historyContainer.innerHTML = `
+            <div class="history-header">
+                <span>Дата</span>
+                <span>Сумма</span>
+            </div>
+            ${historyHTML}
+            <p class="history-hint">Дважды кликните по записи, чтобы удалить её</p>
+        `;
+    } catch (error) {
+        console.error('Error loading history:', error);
+    }
 }
 
-// Функция для очистки истории
-function clearHistory() {
-    localStorage.removeItem('log-history');
-    displayHistory();
-}
-
-// Функция обработки двойного щелчка на записи истории
 function handleHistoryEntryDblClick(event) {
-    // Ищем ближайший родительский элемент с классом history-entry
     const historyEntry = event.target.closest('.history-entry');
     if (!historyEntry) return;
     
-    // Запрашиваем подтверждение у пользователя
-    if (confirm('Удалить эту запись из истории?')) {
-        // Находим индекс записи
-        const allEntries = document.querySelectorAll('.history-entry');
-        const index = Array.from(allEntries).indexOf(historyEntry);
-        
-        if (index !== -1) {
-            // Загружаем историю
-            let history = JSON.parse(localStorage.getItem('log-history') || '[]');
+    const index = parseInt(historyEntry.dataset.index);
+    if (isNaN(index)) return;
+    
+    // Спрашиваем подтверждение
+    if (confirm('Вы уверены, что хотите удалить эту запись из истории?')) {
+        try {
+            // Получаем текущую историю
+            const history = JSON.parse(localStorage.getItem('moneyHistory')) || [];
             
-            // Определяем, к какой дате относится запись
-            const dateContainer = historyEntry.closest('.history-entries');
-            const dateEntries = dateContainer.querySelectorAll('.history-entry');
-            const entryIndexInDate = Array.from(dateEntries).indexOf(historyEntry);
+            // Удаляем запись по индексу
+            history.splice(index, 1);
             
-            // Находим дату
-            const dateHeader = dateContainer.previousElementSibling;
-            const dateText = dateHeader.textContent.split(' (')[0];
+            // Сохраняем обновленную историю
+            localStorage.setItem('moneyHistory', JSON.stringify(history));
             
-            // Фильтруем записи по дате и находим нужную
-            const entriesForDate = history.filter(entry => {
-                return new Date(entry.date).toLocaleDateString() === dateText;
-            });
+            // Если удалили рекорд, обновляем его
+            if (index === 0 && history.length > 0) {
+                localStorage.setItem('moneyRecord', history[0].amount.toString());
+                loadRecords();
+            } else if (history.length === 0) {
+                localStorage.setItem('moneyRecord', '0');
+                loadRecords();
+            }
             
-            if (entriesForDate.length > entryIndexInDate) {
-                // Находим запись в общем массиве
-                const entryToRemove = entriesForDate[entryIndexInDate];
-                const indexInFullHistory = history.findIndex(entry => entry.date === entryToRemove.date);
-                
-                if (indexInFullHistory !== -1) {
-                    // Удаляем запись
-                    history.splice(indexInFullHistory, 1);
-                    localStorage.setItem('log-history', JSON.stringify(history));
-                    
-                    // Обновляем отображение
-                    displayHistory();
+            // Обновляем отображение истории
+            loadHistory();
+        } catch (error) {
+            console.error('Error removing history entry:', error);
+        }
+    }
+}
+
+function loadStats() {
+    try {
+        const statsTab = document.getElementById('stats-tab');
+        if (statsTab) {
+            // Загружаем статистику предметов, если она существует
+            const itemStats = JSON.parse(localStorage.getItem('itemStats')) || {};
+            let statsHTML = '<h2 style="font-weight: bold;">Статистика предметов:</h2>';
+            
+            if (Object.keys(itemStats).length === 0) {
+                statsHTML += '<p>Статистика пуста</p>';
+            } else {
+                statsHTML += '<ul>';
+                for (const [item, count] of Object.entries(itemStats)) {
+                    statsHTML += `<li>${item}: ${count}</li>`;
                 }
+                statsHTML += '</ul>';
+            }
+            
+            statsTab.innerHTML = statsHTML;
+        }
+        
+        // Добавляем кнопку сброса статистики по монстрам
+        const statsTab = document.getElementById('stats-tab');
+        if (statsTab && !document.getElementById('reset-monster-stats-btn')) {
+            const resetButton = document.createElement('button');
+            resetButton.id = 'reset-monster-stats-btn';
+            resetButton.className = 'btn';
+            resetButton.textContent = 'Сбросить статистику по монстрам';
+            resetButton.onclick = resetMonsterStats;
+            statsTab.appendChild(resetButton);
+            
+            // Создаем контейнер для статистики монстров, если его еще нет
+            if (!document.getElementById('monster-stats')) {
+                const statsDiv = document.createElement('div');
+                statsDiv.id = 'monster-stats';
+                statsTab.appendChild(statsDiv);
             }
         }
+        
+        // Добавляем стили для таблиц
+        addMonsterStatsStyles();
+        
+        // Отображаем статистику монстров
+        displayMonsterStats();
+    } catch (error) {
+        console.error('Error loading stats:', error);
     }
 }
 
-// Функция для загрузки статистики
-function loadStats() {
-    displayMonstersStats();
-    displayMoneyStats();
-    displayItemsStats(); // Обновлено для отображения частоты выпадения предметов
-}
+// Новая функциональность для отслеживания статистики монстров
 
-// Функция для отображения статистики по монстрам
-function displayMonstersStats() {
-    const statsContainer = document.getElementById('total-monsters-stats');
-    const totalStats = getTotalMonstersStats();
-    
-    if (Object.keys(totalStats).length === 0) {
-        statsContainer.innerHTML = '<p>Нет данных о монстрах</p>';
-        return;
-    }
-    
-    // Сортируем монстров по количеству убийств (по убыванию)
-    const sortedMonsters = Object.entries(totalStats).sort((a, b) => b[1] - a[1]);
-    
-    let html = '<table class="stats-table">';
-    html += '<tr><th>Монстр</th><th>Количество</th></tr>';
-    
-    for (const [monster, count] of sortedMonsters) {
-        html += `<tr>
-            <td>
-                <img src="images/${monster}.gif" class="item-image" style="width: 30px; height: 30px;" onerror="this.style.display='none'">
-                ${monster}
-            </td>
-            <td>${count}</td>
-        </tr>`;
-    }
-    
-    html += '</table>';
-    
-    // Добавляем общее количество
-    const totalCount = sortedMonsters.reduce((sum, [_, count]) => sum + count, 0);
-    html += `<p style="text-align: center; color: green; font-weight: bold;"><strong>Всего монстров убито:</strong> ${totalCount}</p>`;
-    
-    statsContainer.innerHTML = html;
-}
-
-// Функция для получения общей статистики по монстрам
-function getTotalMonstersStats() {
-    // Получаем все записи истории
-    const history = JSON.parse(localStorage.getItem('log-history') || '[]');
-    
-    // Фильтруем только записи типа 'attacks'
-    const attackEntries = history.filter(entry => entry.type === 'attacks');
-    
-    // Создаем общую статистику
-    const totalStats = {};
-    
-    // Суммируем все результаты
-    attackEntries.forEach(entry => {
-        for (const [monster, count] of Object.entries(entry.data)) {
-            totalStats[monster] = (totalStats[monster] || 0) + count;
-        }
-    });
-    
-    return totalStats;
-}
-
-// Функция для отображения статистики по деньгам
-function displayMoneyStats() {
-    const statsContainer = document.getElementById('total-money-stats');
-    const totalCopper = getTotalMoneyStats();
-    
-    if (totalCopper === 0) {
-        statsContainer.innerHTML = '<p>Нет данных о деньгах</p>';
-        return;
-    }
-    
-    // Преобразуем медь в золото, серебро и медь
+// Функция для форматирования меди в золото/серебро/медь (используется для отображения)
+function formatCopperToGSC(totalCopper) {
     const gold = Math.floor(totalCopper / 10000);
     const remainder = totalCopper % 10000;
     const silver = Math.floor(remainder / 100);
     const copper = remainder % 100;
-    
-    let html = `<p style="text-align: center; color: green; font-weight: bold;"><strong>Всего заработано:</strong></p>`;
-    html += `<div class="money-stats" style="text-align: center;">
-        ${gold} <img src="images/1.svg" class="coin" alt="золото">, 
-        ${silver} <img src="images/2.svg" class="coin" alt="серебро">, 
-        ${copper} <img src="images/3.svg" class="coin" alt="медь">
-    </div>`;
-    
-    statsContainer.innerHTML = html;
+
+    return `${gold} <img src="images/1.svg" class="coin" alt="золото">, ${silver} <img src="images/2.svg" class="coin" alt="серебро">, ${copper} <img src="images/3.svg" class="coin" alt="медь">`;
 }
 
-// Функция для получения общей статистики по деньгам
-function getTotalMoneyStats() {
-    // Получаем все записи истории
-    const history = JSON.parse(localStorage.getItem('log-history') || '[]');
+// Функция для извлечения данных о монстрах из лога
+function extractMonsterData(logLines) {
+    const monsterData = {};
+    let currentMonster = null;
+    let battleStarted = false;
+    let moneyInCurrentBattle = 0;
+    let itemsInCurrentBattle = {};
     
-    // Фильтруем только записи типа 'money'
-    const moneyEntries = history.filter(entry => entry.type === 'money');
-    
-    // Счетчик для общей суммы меди
-    let totalCopper = 0;
-    
-    // Суммируем все результаты
-    moneyEntries.forEach(entry => {
-        const totalMatch = entry.data.match(/Итого: (\d+) .+?, (\d+) .+?, (\d+)/);
-        if (totalMatch) {
-            const gold = parseInt(totalMatch[1]) || 0;
-            const silver = parseInt(totalMatch[2]) || 0;
-            const copper = parseInt(totalMatch[3]) || 0;
-            totalCopper += gold * 10000 + silver * 100 + copper;
+    for (let i = 0; i < logLines.length; i++) {
+        const line = logLines[i];
+        
+        // Поиск начала боя с монстром
+        const attackMatch = line.match(/Вы совершили нападение на (.+?)\s*\[/);
+        if (attackMatch) {
+            currentMonster = attackMatch[1].trim();
+            battleStarted = true;
+            moneyInCurrentBattle = 0;
+            itemsInCurrentBattle = {};
+            
+            if (!monsterData[currentMonster]) {
+                monsterData[currentMonster] = {
+                    battles: 0,
+                    totalMoney: 0,
+                    items: {}
+                };
+            }
+            
+            monsterData[currentMonster].battles++;
+            continue;
         }
-    });
+        
+        if (battleStarted && currentMonster) {
+            // Поиск денег (золото, серебро, медь)
+            const gscMatch = line.match(/Вы получили:\s*(\d+)\s+(\d+)\s+(\d+)/);
+            if (gscMatch) {
+                const gold = parseInt(gscMatch[1]) || 0;
+                const silver = parseInt(gscMatch[2]) || 0;
+                const copper = parseInt(gscMatch[3]) || 0;
+                const copperValue = gold * 10000 + silver * 100 + copper;
+                
+                moneyInCurrentBattle += copperValue;
+            }
+            
+            // Поиск денег (серебро, медь)
+            const scMatch = line.match(/Вы получили:\s*(\d+)\s+(\d+)(?!\s+\d)/);
+            if (scMatch && !gscMatch) {
+                const silver = parseInt(scMatch[1]) || 0;
+                const copper = parseInt(scMatch[2]) || 0;
+                const copperValue = silver * 100 + copper;
+                
+                moneyInCurrentBattle += copperValue;
+            }
+            
+            // Поиск магических денег (золото, серебро, медь)
+            const magicGscMatch = line.match(/Благодаря магическим эффектам, вы сумели обогатиться еще на\s*(\d+)\s+(\d+)\s+(\d+)/);
+            if (magicGscMatch) {
+                const gold = parseInt(magicGscMatch[1]) || 0;
+                const silver = parseInt(magicGscMatch[2]) || 0;
+                const copper = parseInt(magicGscMatch[3]) || 0;
+                const copperValue = gold * 10000 + silver * 100 + copper;
+                
+                moneyInCurrentBattle += copperValue;
+            }
+            
+            // Поиск магических денег (серебро, медь)
+            const magicScMatch = line.match(/Благодаря магическим эффектам, вы сумели обогатиться еще на\s*(\d+)\s+(\d+)(?!\s+\d)/);
+            if (magicScMatch && !magicGscMatch) {
+                const silver = parseInt(magicScMatch[1]) || 0;
+                const copper = parseInt(magicScMatch[2]) || 0;
+                const copperValue = silver * 100 + copper;
+                
+                moneyInCurrentBattle += copperValue;
+            }
+            
+            // Поиск предметов
+            const itemMatch = line.match(/(?:Получено:|Вами получено)\s+(.+?)\s+(\d+)\s+шт/);
+            if (itemMatch) {
+                const itemName = itemMatch[1].trim();
+                const itemQuantity = parseInt(itemMatch[2]) || 1;
+                
+                if (!itemsInCurrentBattle[itemName]) {
+                    itemsInCurrentBattle[itemName] = {
+                        drops: 0,
+                        totalQuantity: 0
+                    };
+                }
+                
+                itemsInCurrentBattle[itemName].drops++;
+                itemsInCurrentBattle[itemName].totalQuantity += itemQuantity;
+            }
+            
+            // Конец боя
+            if (line.includes('Окончен бой')) {
+                battleStarted = false;
+                
+                // Добавляем деньги в статистику монстра
+                monsterData[currentMonster].totalMoney += moneyInCurrentBattle;
+                
+                // Добавляем предметы в статистику монстра
+                for (const [itemName, itemStats] of Object.entries(itemsInCurrentBattle)) {
+                    if (!monsterData[currentMonster].items[itemName]) {
+                        monsterData[currentMonster].items[itemName] = {
+                            drops: 0,
+                            totalQuantity: 0
+                        };
+                    }
+                    
+                    monsterData[currentMonster].items[itemName].drops += itemStats.drops;
+                    monsterData[currentMonster].items[itemName].totalQuantity += itemStats.totalQuantity;
+                }
+                
+                currentMonster = null;
+            }
+        }
+    }
     
-    return totalCopper;
+    return monsterData;
 }
 
-// Функция для отображения статистики по предметам
-function displayItemsStats() {
-    const statsContainer = document.getElementById('total-items-stats');
-    const frequencyStats = getTotalItemsStatsWithFrequency();
+// Функция для обновления статистики монстров в localStorage
+function updateMonsterStats(monsterData) {
+    // Получаем текущую статистику из localStorage
+    const monsterStats = JSON.parse(localStorage.getItem('monsterStats') || '{}');
     
-    if (Object.keys(frequencyStats).length === 0) {
-        statsContainer.innerHTML = '<p>Нет данных о предметах</p>';
+    // Обновляем статистику для каждого монстра
+    for (const [monster, data] of Object.entries(monsterData)) {
+        if (!monsterStats[monster]) {
+            monsterStats[monster] = {
+                battles: 0,
+                totalMoney: 0,
+                items: {}
+            };
+        }
+        
+        monsterStats[monster].battles += data.battles;
+        monsterStats[monster].totalMoney += data.totalMoney;
+        
+        // Обновляем статистику предметов
+        for (const [itemName, itemStats] of Object.entries(data.items)) {
+            if (!monsterStats[monster].items[itemName]) {
+                monsterStats[monster].items[itemName] = {
+                    drops: 0,
+                    totalQuantity: 0
+                };
+            }
+            
+            monsterStats[monster].items[itemName].drops += itemStats.drops;
+            monsterStats[monster].items[itemName].totalQuantity += itemStats.totalQuantity;
+        }
+    }
+    
+    // Сохраняем обновленную статистику
+    localStorage.setItem('monsterStats', JSON.stringify(monsterStats));
+}
+
+// Функция для проверки и обновления рекордов денег
+function checkAndUpdateMoneyRecords(totalCopper, monsterData) {
+    // Получаем текущие рекорды
+    const moneyRecords = JSON.parse(localStorage.getItem('moneyRecords') || '{}');
+    
+    // Проверяем общий рекорд
+    if (!moneyRecords.overall || totalCopper > moneyRecords.overall) {
+        moneyRecords.overall = totalCopper;
+    }
+    
+    // Проверяем рекорд для каждого монстра
+    if (!moneyRecords.monsters) {
+        moneyRecords.monsters = {};
+    }
+    
+    for (const [monster, data] of Object.entries(monsterData)) {
+        if (data.totalMoney > 0 && (!moneyRecords.monsters[monster] || data.totalMoney > moneyRecords.monsters[monster])) {
+            moneyRecords.monsters[monster] = data.totalMoney;
+        }
+    }
+    
+    // Сохраняем обновленные рекорды
+    localStorage.setItem('moneyRecords', JSON.stringify(moneyRecords));
+    
+    // Обратная совместимость со старым рекордом
+    if (totalCopper > (parseInt(localStorage.getItem('moneyRecord')) || 0)) {
+        localStorage.setItem('moneyRecord', totalCopper.toString());
+    }
+}
+
+// Функция для отображения статистики по монстрам
+function displayMonsterStats() {
+    const monsterStats = JSON.parse(localStorage.getItem('monsterStats') || '{}');
+    const moneyRecords = JSON.parse(localStorage.getItem('moneyRecords') || '{}');
+    
+    let statsHtml = '<h2 style="font-weight: bold;">Статистика по монстрам:</h2>';
+    
+    // Проверяем, есть ли данные для отображения
+    if (Object.keys(monsterStats).length === 0) {
+        statsHtml += '<p>Статистика по монстрам пуста</p>';
+        
+        // Отображаем статистику
+        const statsDiv = document.getElementById('monster-stats');
+        if (statsDiv) {
+            statsDiv.innerHTML = statsHtml;
+        } else {
+            const statsTab = document.getElementById('stats-tab') || document.body;
+            const newStatsDiv = document.createElement('div');
+            newStatsDiv.id = 'monster-stats';
+            newStatsDiv.innerHTML = statsHtml;
+            statsTab.appendChild(newStatsDiv);
+        }
+        
         return;
     }
     
-    // Сортируем предметы по количеству выпадений (по убыванию)
-    const sortedItems = Object.entries(frequencyStats).sort((a, b) => b[1].count - a[1].count);
+    // Создаем таблицу для статистики монстров
+    statsHtml += '<table class="monster-stats-table">';
+    statsHtml += '<tr><th>Монстр</th><th>Боев</th><th>Всего денег</th><th>Среднее за бой</th><th>Рекорд</th></tr>';
     
-    let html = '<table class="stats-table">';
-    html += '<tr><th>Предмет</th><th>Количество выпадений</th><th>Частота (%)</th><th>Шкала</th></tr>';
-    
-    for (const [item, data] of sortedItems) {
-        html += `<tr>
-            <td>
-                <img src="images/${item}.gif" class="item-image" style="width: 30px; height: 30px;" onerror="this.style.display='none'">
-                ${item}
-            </td>
-            <td>${data.count}</td>
-            <td>${data.frequency}</td>
-            <td>
-                <div class="scale">
-                    <div style="width: ${data.frequency}%;"></div>
-                </div>
-            </td>
+    for (const [monster, data] of Object.entries(monsterStats)) {
+        const averageMoney = data.battles > 0 ? Math.floor(data.totalMoney / data.battles) : 0;
+        const monsterRecord = moneyRecords.monsters && moneyRecords.monsters[monster] ? moneyRecords.monsters[monster] : 0;
+        
+        statsHtml += `<tr>
+            <td>${monster}</td>
+            <td>${data.battles}</td>
+            <td>${formatCopperToGSC(data.totalMoney)}</td>
+            <td>${formatCopperToGSC(averageMoney)}</td>
+            <td>${formatCopperToGSC(monsterRecord)}</td>
         </tr>`;
     }
     
-    html += '</table>';
+    statsHtml += '</table>';
     
-    // Добавляем общее количество
-    const totalCount = Object.values(frequencyStats).reduce((sum, data) => sum + data.count, 0);
-    html += `<p style="text-align: center; color: green; font-weight: bold;"><strong>Всего предметов собрано:</strong> ${totalCount}</p>`;
+    // Добавляем общий рекорд
+    const overallRecord = moneyRecords.overall || 0;
+    statsHtml += `<h3>Общий рекорд: ${formatCopperToGSC(overallRecord)}</h3>`;
     
-    statsContainer.innerHTML = html;
-}
-
-// Функция для получения общей статистики по предметам с частотой
-function getTotalItemsStatsWithFrequency() {
-    // Получаем все записи истории
-    const history = JSON.parse(localStorage.getItem('log-history') || '[]');
-    
-    // Фильтруем только записи типа 'items'
-    const itemEntries = history.filter(entry => entry.type === 'items');
-    
-    // Создаем общую статистику
-    const totalStats = {};
-    
-    // Суммируем все результаты
-    itemEntries.forEach(entry => {
-        for (const [item, count] of Object.entries(entry.data)) {
-            totalStats[item] = (totalStats[item] || 0) + count;
+    // Добавляем таблицы для предметов каждого монстра
+    for (const [monster, data] of Object.entries(monsterStats)) {
+        if (Object.keys(data.items).length > 0) {
+            statsHtml += `<h3>Предметы с ${monster}:</h3>`;
+            statsHtml += '<table class="items-stats-table">';
+            statsHtml += '<tr><th>Предмет</th><th>Падений</th><th>Всего штук</th><th>Шанс падения</th><th>Среднее кол-во</th></tr>';
+            
+            // Сортируем предметы по количеству падений
+            const sortedItems = Object.entries(data.items).sort((a, b) => b[1].drops - a[1].drops);
+            
+            for (const [itemName, itemStats] of sortedItems) {
+                const dropChance = (itemStats.drops / data.battles * 100).toFixed(2);
+                const averageQuantity = (itemStats.totalQuantity / itemStats.drops).toFixed(2);
+                
+                statsHtml += `<tr>
+                    <td>${itemName}</td>
+                    <td>${itemStats.drops}</td>
+                    <td>${itemStats.totalQuantity}</td>
+                    <td>${dropChance}%</td>
+                    <td>${averageQuantity}</td>
+                </tr>`;
+            }
+            
+            statsHtml += '</table>';
         }
-    });
-    
-    // Вычисляем общее количество выпадений
-    const totalCount = Object.values(totalStats).reduce((sum, count) => sum + count, 0);
-    
-    // Создаем объект для хранения частоты
-    const frequencyStats = {};
-    
-    // Вычисляем частоту для каждого предмета
-    for (const [item, count] of Object.entries(totalStats)) {
-        frequencyStats[item] = {
-            count: count,
-            frequency: ((count / totalCount) * 100).toFixed(2) // Форматируем до двух знаков после запятой
-        };
     }
     
-    return frequencyStats;
+    // Отображаем статистику
+    const statsDiv = document.getElementById('monster-stats');
+    if (statsDiv) {
+        statsDiv.innerHTML = statsHtml;
+    } else {
+        const statsTab = document.getElementById('stats-tab') || document.body;
+        const newStatsDiv = document.createElement('div');
+        newStatsDiv.id = 'monster-stats';
+        newStatsDiv.innerHTML = statsHtml;
+        statsTab.appendChild(newStatsDiv);
+    }
 }
 
-// Функция для очистки всей статистики
-function clearAllStats() {
-    if (confirm('Вы уверены, что хотите сбросить всю статистику? Это действие нельзя отменить.')) {
-        localStorage.removeItem('log-history');
-        localStorage.removeItem('attack-records');
-        localStorage.removeItem('money-record');
-        
-        // Обновляем отображение
-        loadRecords();
-        loadHistory();
-        loadStats();
-        
-        alert('Вся статистика успешно сброшена.');
+// Функция для сброса статистики монстров
+function resetMonsterStats() {
+    if (confirm('Вы уверены, что хотите сбросить всю статистику по монстрам?')) {
+        localStorage.removeItem('monsterStats');
+        localStorage.removeItem('moneyRecords');
+        displayMonsterStats();
+        alert('Статистика по монстрам успешно сброшена!');
     }
+}
+
+// Добавление стилей для таблиц статистики
+function addMonsterStatsStyles() {
+    // Проверяем, добавлены ли уже стили
+    if (document.getElementById('monster-stats-styles')) {
+        return;
+    }
+    
+    const styleElement = document.createElement('style');
+    styleElement.id = 'monster-stats-styles';
+    styleElement.textContent = `
+    .monster-stats-table, .items-stats-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+    }
+    
+    .monster-stats-table th, .monster-stats-table td,
+    .items-stats-table th, .items-stats-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+    
+    .monster-stats-table th, .items-stats-table th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+    }
+    
+    .monster-stats-table tr:nth-child(even), .items-stats-table tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+    
+    .monster-stats-table tr:hover, .items-stats-table tr:hover {
+        background-color: #f1f1f1;
+    }
+    
+    .items-stats-table {
+        margin-left: 20px;
+        width: 95%;
+    }
+    `;
+    
+    document.head.appendChild(styleElement);
 }
